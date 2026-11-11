@@ -53,25 +53,12 @@ WRITEUPS = [
     dict(kind="ctf", group="NEXTHUNT 2025", src="nexthunt/web-daveloper.md", slug="web-daveloper", title="web daveloper",
          summary="A WebDAV endpoint that only allows GET: method override, PROPFIND enumeration and a final header bypass.",
          tags=["WebDAV", "Method override", "Access control"], badge="web", repo=NEXTHUNT_REPO + "web_daveloper"),
-    # ---- CTF authored: NEXTRACE 2025 ----
-    dict(kind="ctf", group="NEXTRACE 2025", src="nextrace/money-laundering.md", slug="money-laundering", title="Money laundering",
-         summary="Cash means cache. A protected PURGE method falls to an X-HTTP-Method-Override header. Co-authored with dhia.",
-         tags=["Web cache", "Method override", "CDN"], badge="web", repo=NEXTRACE_REPO + quote("web caching")),
-    dict(kind="ctf", group="NEXTRACE 2025", src="nextrace/hpp.md", slug="hpp", title="HPP",
-         summary="id=1 is forbidden, id=3 is fine. What happens with ?id=2&id=1?",
-         tags=["HPP", "IDOR"], badge="web", repo=NEXTRACE_REPO + "HPP"),
-    dict(kind="ctf", group="NEXTRACE 2025", src="nextrace/headers.md", slug="headers", title="Headers",
-         summary="The language of servers is headers. One of them says admin: false.",
-         tags=["Headers", "Broken access control"], badge="web", repo=NEXTRACE_REPO + "Headers"),
-    dict(kind="ctf", group="NEXTRACE 2025", src="nextrace/passw0rd.md", slug="passw0rd", title="Passw0rd",
-         summary="Intercept the password check and flip false to true.",
-         tags=["Response manipulation"], badge="web", repo=NEXTRACE_REPO + quote("Response Manipulationn")),
-    dict(kind="ctf", group="NEXTRACE 2025", src="nextrace/inspect-v2.md", slug="inspect-v2", title="Inspect V2",
-         summary="Remove the big image, enable the disabled button. DevTools warm-up.",
-         tags=["DevTools", "Warm-up"], badge="warm-up", repo=NEXTRACE_REPO + quote("inspect V2")),
-    dict(kind="ctf", group="NEXTRACE 2025", src="nextrace/rendez-vous.md", slug="rendez-vous", title="Rendez-Vous",
-         summary="Always inspect. The shortest writeup in the series.",
-         tags=["DevTools", "Warm-up"], badge="warm-up", repo=NEXTRACE_REPO + "inspect"),
+    # ---- CTF authored: NEXTRACE 2025 (one combined writeup) ----
+    dict(kind="ctf", group="NEXTRACE 2025", src="nextrace/nextrace-2025.md", slug="nextrace-2025",
+         title="NEXTRACE 2025: six web challenges",
+         summary="All six beginner challenges in one writeup: DevTools, response manipulation, headers, HPP and a web-cache PURGE bypass.",
+         tags=["Response manipulation", "HPP", "Web cache", "Headers"], badge="6 challenges",
+         repo="https://github.com/0xsila/nexus-nextrace-2025-challenges"),
 ]
 
 GIPHY = re.compile(r"giphy", re.I)
