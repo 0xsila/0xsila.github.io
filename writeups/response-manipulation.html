@@ -1,26 +1,18 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Server Said No. I Said Yes. · 0xsila</title>
-<meta name="description" content="Four response-manipulation bugs: password-protected share links, locked features and three flavours of OTP bypass.">
-<meta name="theme-color" content="#0a0a0c">
+<title>The Server Said No. I Said Yes. - 0xsila</title>
+<meta name="description" content="Four response manipulation bugs: protected share links, locked features and OTP bypasses.">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/style.css">
-</head><body class="post-page">
-<div class="glow" aria-hidden="true"></div>
-<header class="nav"><div class="wrap nav-in">
-  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
-  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
-</div></header>
-<main class="wrap post">
-  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
-  <p class="eyebrow">Bug bounty</p>
-  <h1>The Server Said No. I Said Yes.</h1>
-  <p class="lede">Four response-manipulation bugs: password-protected share links, locked features and three flavours of OTP bypass.</p>
-  <div class="tags"><span class='tag'>Response manipulation</span><span class='tag'>OTP bypass</span><span class='tag'>HackerOne</span></div>
-  <article class="prose"><p><strong>By 0xsila</strong> · <em>The server says "no". I edit it to say "yes". The app believes me. Four times.</em></p>
+</head><body><div class="wrap">
+<header class="top"><a href="../index.html"><b>0xsila</b></a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
+<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<h1>The Server Said No. I Said Yes.</h1>
+<p class="meta">bug bounty &middot; HackerOne private program &middot; 6 reports</p>
+<article class="prose"><p><strong>By 0xsila</strong> · <em>The server says "no". I edit it to say "yes". The app believes me. Four times.</em></p>
 <hr />
 <p>There's a moment in every session when I stop attacking the server and start attacking the <em>browser's trust</em> in the server.</p>
 <p>I was in my favorite private program, poking at a file-sharing feature, when I caught myself thinking: "the server just told the page <code>failed</code>. What if it had said <code>success</code>?"</p>
@@ -64,9 +56,6 @@
 </code></pre>
 <p>I changed <code>false</code> to <code>true</code> and forwarded it. The add-on opened with no license.</p>
 <p>Nothing clever. Just reading every response and asking, "what happens if this boolean is the other value?"</p>
-<blockquote>
-<p>🏆 <strong>Report resolved · Bounty awarded (Oct 2025)</strong></p>
-</blockquote>
 <h2>Episode 4: OTP bypass (three flavors)</h2>
 <p>Verification codes are a perfect fit for this bug:</p>
 <ul>
@@ -77,9 +66,6 @@
 <p>The response said the code was wrong. I edited it to say it was right, forwarded it, and the email was accepted without me proving I owned it.<br />
 - <strong>Phone verification during a trial signup:</strong> I took a "verified" response from another of my accounts and pasted it over the failed one.<br />
 - <strong>Signup on a kids' 3D-design platform:</strong> here I didn't even need a proxy. The account worked fully without confirming the email. The check just wasn't enforced.</p>
-<blockquote>
-<p>🏆 <strong>Signup bypass: report triaged · Bounty awarded (Sep 2026)</strong></p>
-</blockquote>
 <p><strong>Why it matters:</strong> a verified email is a trust signal. Now someone can register with <em>your</em> address, or claim an account that isn't theirs.</p>
 <hr />
 <h2>How I thought differently</h2>
@@ -110,8 +96,15 @@
 <hr />
 <p><em>Written by 0xsila.</em><br />
 <strong>Find me on HackerOne:</strong> <a href="https://hackerone.com/0xsila">https://hackerone.com/0xsila</a></p></article>
-  <div class="post-cta"><a class='btn ghost' href='https://hackerone.com/0xsila' target='_blank' rel='noopener'>HackerOne profile &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
-  <div class="pn-row"><a class='pn' href='mass-assignment.html'><small>Previous</small><b>One JSON Field, One Invisible Project Owner</b></a><a class='pn' href='business-logic.html'><small>Next</small><b>The Free Trial That Never Ended</b></a></div>
-</main>
-<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
-</body></html>
+<h2>Reports behind this writeup</h2>
+<p class="small mute">6 reports on HackerOne. Dates are the day of the event; (+Nd) is the number of days after the report.
+Bounty program = paid private program. VDP = vulnerability disclosure program: a thank you and 7 reputation points per resolved report, which helps get invited to private programs.
+Several reports of the same pattern share one row.</p>
+<div class="tw"><table>
+<thead><tr><th>Finding</th><th>Severity</th><th>Status</th><th>Reported</th><th>Triaged</th><th>Resolved</th><th>Reward</th></tr></thead>
+<tbody><tr><td class='f'><span class='mute'>Episode 1 &middot; bounty program</span><br>Password-protected share link bypass</td><td>high</td><td>duplicate</td><td class='n'>2025-09-24</td><td class='n'>-</td><td class='n'>-</td><td><span class='mute'>none</span></td></tr><tr><td class='f'><span class='mute'>Episode 2 &middot; bounty program</span><br>Same wall, different door (second product)</td><td>-</td><td>duplicate</td><td class='n'>2025-10-27</td><td class='n'>-</td><td class='n'>-</td><td><span class='mute'>none</span></td></tr><tr><td class='f'><span class='mute'>Episode 3 &middot; bounty program</span><br>Locked feature flips to unlocked (hasAccess)</td><td>medium</td><td>resolved</td><td class='n'>2025-09-27</td><td class='n'>-</td><td class='n'>2026-02-19 (+145d)</td><td>bounty<br><span class='mute'>awarded 2025-10-16 (+19d)</span></td></tr><tr><td class='f'><span class='mute'>Episode 4 &middot; VDP</span><br>OTP bypass when changing an email</td><td>high</td><td>duplicate</td><td class='n'>2025-02-14</td><td class='n'>-</td><td class='n'>-</td><td><span class='mute'>none</span><br><span class='mute'>VDP</span></td></tr><tr><td class='f'><span class='mute'>Episode 4 &middot; VDP</span><br>OTP bypass when verifying a phone number</td><td>medium</td><td>duplicate</td><td class='n'>2025-04-01</td><td class='n'>-</td><td class='n'>-</td><td><span class='mute'>none</span><br><span class='mute'>VDP</span></td></tr><tr><td class='f'><span class='mute'>Episode 4 &middot; bounty program</span><br>Email/OTP verification bypass at signup</td><td>medium</td><td>triaged</td><td class='n'>2026-08-24</td><td class='n'>2026-09-02 (+9d)</td><td class='n'>-</td><td>bounty<br><span class='mute'>awarded 2026-09-17 (+24d)</span></td></tr></tbody>
+<tfoot><tr><td colspan="7">2 bounties; 0 resolved VDP reports (thanks and 7 points each).</td></tr></tfoot>
+</table></div>
+<p><a href="https://hackerone.com/0xsila">HackerOne profile</a></p>
+<div class="pn"><a href="mass-assignment.html">previous: One JSON Field, One Invisible Project Owner</a><a href="business-logic.html">next: The Free Trial That Never Ended</a></div>
+<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>

@@ -1,26 +1,18 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>One JSON Field, One Invisible Project Owner · 0xsila</title>
-<meta name="description" content="The server copied everything I sent onto its objects. I told it who created a project (nobody) and when a comment was written (2001).">
-<meta name="theme-color" content="#0a0a0c">
+<title>One JSON Field, One Invisible Project Owner - 0xsila</title>
+<meta name="description" content="Mass assignment: forging the owner of a project and the timestamps of comments and wiki pages.">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/style.css">
-</head><body class="post-page">
-<div class="glow" aria-hidden="true"></div>
-<header class="nav"><div class="wrap nav-in">
-  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
-  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
-</div></header>
-<main class="wrap post">
-  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
-  <p class="eyebrow">Bug bounty</p>
-  <h1>One JSON Field, One Invisible Project Owner</h1>
-  <p class="lede">The server copied everything I sent onto its objects. I told it who created a project (nobody) and when a comment was written (2001).</p>
-  <div class="tags"><span class='tag'>Mass assignment</span><span class='tag'>API</span><span class='tag'>HackerOne</span></div>
-  <article class="prose"><p><strong>By 0xsila</strong> · <em>The server copied everything I sent onto its objects. So I told it who made a project (nobody), and when I wrote a comment (2001).</em></p>
+</head><body><div class="wrap">
+<header class="top"><a href="../index.html"><b>0xsila</b></a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
+<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<h1>One JSON Field, One Invisible Project Owner</h1>
+<p class="meta">bug bounty &middot; HackerOne private program &middot; 4 reports</p>
+<article class="prose"><p><strong>By 0xsila</strong> · <em>The server copied everything I sent onto its objects. So I told it who made a project (nobody), and when I wrote a comment (2001).</em></p>
 <hr />
 <p>Every hunter has that one private program they love. Mine has a huge collaboration platform: workspaces, projects, files, comments, wiki pages. It also has an <strong>activity feed</strong>, the page admins check to see who did what. That's basically the audit trail.</p>
 <p>And I have a rule: <strong>if a feature exists to hold people accountable, I try to lie to it.</strong></p>
@@ -104,14 +96,8 @@ project.owner  = currentUser.id;   // always server-decided
 <pre><code class="language-json">{&quot;body&quot;: &quot;hello&quot;, &quot;published&quot;: &quot;2001-12-10T19:19:19.410Z&quot;}
 </code></pre>
 <p>The comment appeared dated 2001. Any date, past or future.</p>
-<blockquote>
-<p>🏆 <strong>Report resolved · Bounty awarded (Nov 2025)</strong></p>
-</blockquote>
 <h2>Bug #3: Same trick on wiki pages</h2>
 <p>Wiki pages had the same weakness. Adding <code>creationTime</code>, <code>lastModified</code> and <code>modifiedTime</code> to the create request let me backdate or forward-date a page.</p>
-<blockquote>
-<p>🏆 <strong>Report resolved · Bounty awarded (Nov 2025)</strong></p>
-</blockquote>
 <p>Three features, one root cause: <strong>the server trusted the client's JSON.</strong></p>
 <hr />
 <h2>How I thought differently</h2>
@@ -144,8 +130,15 @@ project.owner  = currentUser.id;   // always server-decided
 <hr />
 <p><em>Written by 0xsila.</em><br />
 <strong>Find me on HackerOne:</strong> <a href="https://hackerone.com/0xsila">https://hackerone.com/0xsila</a></p></article>
-  <div class="post-cta"><a class='btn ghost' href='https://hackerone.com/0xsila' target='_blank' rel='noopener'>HackerOne profile &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
-  <div class="pn-row"><a class='pn' href='idor-series.html'><small>Previous</small><b>Change One Number, Own Someone Else&#x27;s Data</b></a><a class='pn' href='response-manipulation.html'><small>Next</small><b>The Server Said No. I Said Yes.</b></a></div>
-</main>
-<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
-</body></html>
+<h2>Reports behind this writeup</h2>
+<p class="small mute">4 reports on HackerOne. Dates are the day of the event; (+Nd) is the number of days after the report.
+Bounty program = paid private program. VDP = vulnerability disclosure program: a thank you and 7 reputation points per resolved report, which helps get invited to private programs.
+Several reports of the same pattern share one row.</p>
+<div class="tw"><table>
+<thead><tr><th>Finding</th><th>Severity</th><th>Status</th><th>Reported</th><th>Triaged</th><th>Resolved</th><th>Reward</th></tr></thead>
+<tbody><tr><td class='f'><span class='mute'>Bug #1 &middot; bounty program</span><br>Hide the project creator (Owner field)</td><td>medium</td><td>informative</td><td class='n'>2025-09-23</td><td class='n'>2025-10-01 (+8d)</td><td class='n'>-</td><td><span class='mute'>none</span></td></tr><tr><td class='f'><span class='mute'>Bug #2 &middot; bounty program</span><br>Backdate comments with a forged timestamp</td><td>medium</td><td>resolved</td><td class='n'>2025-10-12</td><td class='n'>2025-10-19 (+7d)</td><td class='n'>2026-01-14 (+94d)</td><td>bounty<br><span class='mute'>awarded 2025-11-14 (+33d)</span></td></tr><tr><td class='f'><span class='mute'>Bug #3 &middot; bounty program</span><br>Backdate wiki pages with forged timestamps</td><td>medium</td><td>resolved</td><td class='n'>2025-10-13</td><td class='n'>2025-10-19 (+6d)</td><td class='n'>2026-01-14 (+93d)</td><td>bounty<br><span class='mute'>awarded 2025-11-14 (+32d)</span></td></tr><tr><td class='f'><span class='mute'>Bonus &middot; VDP</span><br>Client-chosen id breaks later deletes</td><td>critical</td><td>resolved</td><td class='n'>2025-06-17</td><td class='n'>2025-07-01 (+14d)</td><td class='n'>2025-07-29 (+42d)</td><td>thanks, +7 points<br><span class='mute'>VDP, no bounty</span></td></tr></tbody>
+<tfoot><tr><td colspan="7">2 bounties; 1 resolved VDP reports (thanks and 7 points each).</td></tr></tfoot>
+</table></div>
+<p><a href="https://hackerone.com/0xsila">HackerOne profile</a></p>
+<div class="pn"><a href="idor-series.html">previous: Change One Number, Own Someone Else&#x27;s Data</a><a href="response-manipulation.html">next: The Server Said No. I Said Yes.</a></div>
+<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>

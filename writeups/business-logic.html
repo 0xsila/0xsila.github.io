@@ -1,26 +1,18 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Free Trial That Never Ended · 0xsila</title>
-<meta name="description" content="Business logic bugs that print money: endless trials, plan toggles, member caps and one account with many workspaces.">
-<meta name="theme-color" content="#0a0a0c">
+<title>The Free Trial That Never Ended - 0xsila</title>
+<meta name="description" content="Business logic bugs: endless trials, plan toggles, member caps and many workspaces on one account.">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/style.css">
-</head><body class="post-page">
-<div class="glow" aria-hidden="true"></div>
-<header class="nav"><div class="wrap nav-in">
-  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
-  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
-</div></header>
-<main class="wrap post">
-  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
-  <p class="eyebrow">Bug bounty</p>
-  <h1>The Free Trial That Never Ended</h1>
-  <p class="lede">Business logic bugs that print money: endless trials, plan toggles, member caps and one account with many workspaces.</p>
-  <div class="tags"><span class='tag'>Business logic</span><span class='tag'>Billing</span><span class='tag'>HackerOne</span></div>
-  <article class="prose"><p><strong>By 0xsila</strong> · <em>Nothing is "hacked". The app just forgets its own rules, and the rules are where the money lives.</em></p>
+</head><body><div class="wrap">
+<header class="top"><a href="../index.html"><b>0xsila</b></a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
+<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<h1>The Free Trial That Never Ended</h1>
+<p class="meta">bug bounty &middot; HackerOne private program &middot; 12 reports</p>
+<article class="prose"><p><strong>By 0xsila</strong> · <em>Nothing is "hacked". The app just forgets its own rules, and the rules are where the money lives.</em></p>
 <hr />
 <p>My favorite private program sells paid features on top of a free trial. Which means somewhere in that product there's a very long list of rules:</p>
 <ul>
@@ -74,9 +66,6 @@
 </ol>
 <p>The restriction lived only in the front end. The backend never asked, "does this account still have a license?"</p>
 <p>I repeated it module by module: same bug, different feature. That's the joy of business logic bugs: once you find the pattern, you sweep the product. Later I found the same weakness on a GraphQL API where premium operations didn't check the entitlement at all.</p>
-<blockquote>
-<p>🏆 <strong>GraphQL variant: report triaged · Bounty awarded (Nov 2025)</strong></p>
-</blockquote>
 <p><strong>How I thought about it:</strong> I didn't test "can I do X?" I tested <strong>"is the gate in the UI or on the server?"</strong> Replaying a valid request with an invalid account answers that cleanly.</p>
 <h2>Episode 2: The toggle that said "not on your plan"</h2>
 <p>A hub admin screen had a setting for a premium calculation feature. For non-paying hubs, the toggle was disabled with a message saying it needs a paid plan.</p>
@@ -84,15 +73,9 @@
 <pre><code class="language-json">{&quot;shareFileAllowed&quot;: true, &quot;premiumFeatureEnabled&quot;: &quot;false&quot;}
 </code></pre>
 <p>I changed <code>false</code> to <code>true</code> and sent it. The feature turned on. The UI had hidden the toggle, but the endpoint never checked the plan.</p>
-<blockquote>
-<p>🏆 <strong>Report triaged · Bounty awarded (Nov 2026)</strong></p>
-</blockquote>
 <p><strong>Lesson:</strong> a disabled form control isn't a security control. Read the <strong>whole</strong> body of a save request. Fields the UI doesn't let you change are often still accepted.</p>
 <h2>Episode 3: The member cap that didn't hold</h2>
 <p>A free-tier hub has a member cap. The rule existed in the code, but it didn't survive when I tested it with several requests at the same moment. A rule that exists isn't the same as a rule that holds up.</p>
-<blockquote>
-<p>🏆 <strong>Report resolved · Bounty awarded (Sep 2025)</strong></p>
-</blockquote>
 <h2>Episode 4: One account, many workspaces</h2>
 <p>Each account was supposed to own one hub. Sending several "create hub" requests at the same time left one account with several. Odd detail: they didn't show up right away. They became accessible about two hours later.</p>
 <p>I couldn't explain why, but it happened twice. I said so in the report instead of pretending I understood. Honest reports beat confident wrong ones.</p>
@@ -126,8 +109,15 @@
 <hr />
 <p><em>Written by 0xsila.</em><br />
 <strong>Find me on HackerOne:</strong> <a href="https://hackerone.com/0xsila">https://hackerone.com/0xsila</a></p></article>
-  <div class="post-cta"><a class='btn ghost' href='https://hackerone.com/0xsila' target='_blank' rel='noopener'>HackerOne profile &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
-  <div class="pn-row"><a class='pn' href='response-manipulation.html'><small>Previous</small><b>The Server Said No. I Said Yes.</b></a><a class='pn' href='1xbet.html'><small>Next</small><b>1xbet</b></a></div>
-</main>
-<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
-</body></html>
+<h2>Reports behind this writeup</h2>
+<p class="small mute">12 reports on HackerOne. Dates are the day of the event; (+Nd) is the number of days after the report.
+Bounty program = paid private program. VDP = vulnerability disclosure program: a thank you and 7 reputation points per resolved report, which helps get invited to private programs.
+Several reports of the same pattern share one row.</p>
+<div class="tw"><table>
+<thead><tr><th>Finding</th><th>Severity</th><th>Status</th><th>Reported</th><th>Triaged</th><th>Resolved</th><th>Reward</th></tr></thead>
+<tbody><tr><td class='f'><span class='mute'>Episode 1 &middot; VDP</span><br>Trial that never ends: product access kept after expiry (7 products) <span class='mute'>x7</span></td><td>critical</td><td>3 resolved, 1 duplicate, 3 triaged</td><td class='n'>2025-04-02</td><td class='n'>2025-04-03 (+1d)</td><td class='n'>2025-10-30 (+211d)</td><td>thanks, +21 points<br><span class='mute'>VDP, no bounty</span></td></tr><tr><td class='f'><span class='mute'>Episode 1 &middot; bounty program</span><br>Trial variant through GraphQL</td><td>medium</td><td>triaged</td><td class='n'>2025-10-16</td><td class='n'>2025-11-03 (+18d)</td><td class='n'>-</td><td>bounty<br><span class='mute'>awarded 2025-11-03 (+18d)</span></td></tr><tr><td class='f'><span class='mute'>Episode 2 &middot; bounty program</span><br>Premium-only feature enabled on a lower plan</td><td>medium</td><td>triaged</td><td class='n'>2026-10-10</td><td class='n'>2026-10-30 (+20d)</td><td class='n'>-</td><td>bounty<br><span class='mute'>awarded 2026-11-05 (+26d)</span></td></tr><tr><td class='f'><span class='mute'>Episode 3 &middot; bounty program</span><br>Race condition passes the 15-member cap</td><td>medium</td><td>resolved</td><td class='n'>2025-08-22</td><td class='n'>-</td><td class='n'>2025-09-16 (+25d)</td><td>bounty<br><span class='mute'>awarded 2025-09-08 (+17d)</span></td></tr><tr><td class='f'><span class='mute'>Episode 3 &middot; bounty program</span><br>Member cap race, second report</td><td>medium</td><td>informative</td><td class='n'>2026-02-28</td><td class='n'>-</td><td class='n'>-</td><td><span class='mute'>none</span></td></tr><tr><td class='f'><span class='mute'>Episode 4 &middot; bounty program</span><br>Race condition creates multiple workspaces on one account</td><td>medium</td><td>informative</td><td class='n'>2025-09-23</td><td class='n'>-</td><td class='n'>-</td><td><span class='mute'>none</span></td></tr></tbody>
+<tfoot><tr><td colspan="7">3 bounties; 3 resolved VDP reports (thanks and 7 points each).</td></tr></tfoot>
+</table></div>
+<p><a href="https://hackerone.com/0xsila">HackerOne profile</a></p>
+<div class="pn"><a href="response-manipulation.html">previous: The Server Said No. I Said Yes.</a><a href="1xbet.html">next: 1xbet</a></div>
+<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>

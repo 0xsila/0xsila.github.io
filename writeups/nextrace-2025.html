@@ -1,149 +1,108 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NEXTRACE 2025: six web challenges · 0xsila</title>
-<meta name="description" content="All six beginner challenges in one writeup: DevTools, response manipulation, headers, HPP and a web-cache PURGE bypass.">
-<meta name="theme-color" content="#0a0a0c">
+<title>NEXTRACE 2025: the six web challenges - 0xsila</title>
+<meta name="description" content="DevTools, response manipulation, headers, HPP and a web cache PURGE bypass.">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/style.css">
-</head><body class="post-page">
-<div class="glow" aria-hidden="true"></div>
-<header class="nav"><div class="wrap nav-in">
-  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
-  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
-</div></header>
-<main class="wrap post">
-  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
-  <p class="eyebrow">NEXTRACE 2025</p>
-  <h1>NEXTRACE 2025: six web challenges</h1>
-  <p class="lede">All six beginner challenges in one writeup: DevTools, response manipulation, headers, HPP and a web-cache PURGE bypass.</p>
-  <div class="tags"><span class='tag'>Response manipulation</span><span class='tag'>HPP</span><span class='tag'>Web cache</span><span class='tag'>Headers</span></div>
-  <article class="prose"><p><strong>Author: 0xsila</strong> (Money laundering co-written with dhia)</p>
-<p>NEXTRACE was the entry-level round of the Nexus Security Club CTF. I wrote six web challenges for it, and none of them needs more than a browser, DevTools and Burp Suite. The goal was to teach one idea per challenge: <strong>the client is not a security boundary</strong>, and every <code>403</code> is a hint, not a wall.</p>
-<table>
-<thead>
-<tr>
-<th>Challenge</th>
-<th>Idea</th>
-<th>Trick</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Rendez-Vous</td>
-<td>DevTools</td>
-<td>Read the page source</td>
-</tr>
-<tr>
-<td>Inspect V2</td>
-<td>DevTools</td>
-<td>Remove an overlay, enable a disabled button</td>
-</tr>
-<tr>
-<td>Passw0rd</td>
-<td>Response manipulation</td>
-<td>Flip <code>false</code> to <code>true</code> in the response</td>
-</tr>
-<tr>
-<td>Headers</td>
-<td>Broken access control</td>
-<td>Change <code>X-Admin: false</code> to <code>true</code></td>
-</tr>
-<tr>
-<td>HPP</td>
-<td>HTTP parameter pollution</td>
-<td><code>?id=2&amp;id=1</code></td>
-</tr>
-<tr>
-<td>Money laundering</td>
-<td>Web cache + method override</td>
-<td><code>X-HTTP-Method-Override: PURGE</code></td>
-</tr>
-</tbody>
-</table>
+</head><body><div class="wrap">
+<header class="top"><a href="../index.html"><b>0xsila</b></a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
+<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<h1>NEXTRACE 2025: the six web challenges</h1>
+<p class="meta">CTF challenge writeup &middot; NEXTRACE 2025 &middot; author: 0xsila</p>
+<article class="prose"><p><strong>Author</strong> : 0xsila (Money laundering with dhia)</p>
+<p>NEXTRACE was an easy CTF, so instead of six small writeups here is one. Six web challenges, each one is about a simple idea : the client is not a security boundary, and any 403 is just a start.</p>
 <hr />
 <h2>Rendez-Vous</h2>
 <blockquote>
-<p>"la prochaine rendez-vous est la semaine prochaine. Cordialement"</p>
+<p>la prochaine rendez-vous est la semaine prochaine<br />
+Cordialement</p>
 </blockquote>
-<p><strong>Solution.</strong> Inspect the page and the flag is there. It is the shortest challenge on purpose: always look at the source before reaching for tools.</p>
-<p><code>nexus{4lwaYS_1n5p3Ct_surpr1s3_M3}</code></p>
+<p><strong>SOLUTION :</strong></p>
+<ul>
+<li>inspect the page , and get the flag .</li>
+</ul>
+<p><strong>flag :</strong> <code>nexus{4lwaYS_1n5p3Ct_surpr1s3_M3}</code></p>
 <hr />
 <h2>Inspect V2</h2>
 <blockquote>
-<p>"Hey Agent, you solved the first version of Inspect quite easily. Can you handle this new and improved version?"</p>
+<p>Hey Agent,<br />
+you solved the first version of Inspect quite easily.<br />
+can you handle this new and improved version ?</p>
 </blockquote>
-<p><strong>Solution.</strong></p>
-<ol>
-<li>Open DevTools and inspect the page.</li>
-<li>Remove the big image (delete its <code>src</code>, or delete the whole tag) so it stops covering the page.</li>
-<li>Behind it sits a <strong>disabled</strong> button. Remove the <code>disabled</code> attribute.</li>
-<li>Click it and the flag appears.</li>
-</ol>
-<p><code>nexus{1n5p3ct_c4n_d000_4_l0t_0f_th1ng55555}</code></p>
+<p><strong>SOLUTION :</strong></p>
+<ul>
+<li>inspect the page .</li>
+<li>remove the big image by removing src for the image tag , or just removing all the tag .</li>
+<li>we see a disabled button , enable it .</li>
+<li>click the button and get the flag .</li>
+</ul>
+<p><strong>flag :</strong> <code>nexus{1n5p3ct_c4n_d000_4_l0t_0f_th1ng55555}</code></p>
 <hr />
 <h2>Passw0rd</h2>
 <blockquote>
-<p>"oh, I forgot my password... let's see what we will get in the response... maybe changing something will let us break the logic."</p>
+<p>oh , i forgot my password ......<br />
+lets see what we will get in the response ....<br />
+maybe changing something will let us break the logic .....</p>
 </blockquote>
-<p><strong>Solution.</strong></p>
-<ol>
-<li>Enter any random password with Burp's proxy on.</li>
-<li>Intercept the <strong>response</strong> of the request that checks the password.</li>
-<li>Change <code>false</code> to <code>true</code>.</li>
-<li>The frontend believes it and shows the flag.</li>
-</ol>
-<p><strong>Lesson.</strong> If the browser decides whether you are authenticated from a value in the response, you can decide it for the browser.</p>
-<p><code>nexus{R3sp0ns3_M4n1pul4Ti0n_is_P0werFull}</code></p>
+<p><strong>SOLUTION :</strong></p>
+<ul>
+<li>enter any random password .</li>
+<li>click enter , with proxy open in burp .</li>
+<li>intercept the response of the request that checks the password .</li>
+<li>change <code>false</code> =&gt; <code>true</code> .</li>
+<li>and bom get the flag .</li>
+</ul>
+<p><strong>flag :</strong> <code>nexus{R3sp0ns3_M4n1pul4Ti0n_is_P0werFull}</code></p>
 <hr />
 <h2>Headers</h2>
 <blockquote>
-<p>"The language of servers is headers, do you know how to speak it? Can you be the admin?"</p>
+<p>the language of servers is headers , do u know how to speak it ?<br />
+can u be the admin ?</p>
 </blockquote>
-<p><strong>Solution.</strong></p>
-<ol>
-<li>Intercept the requests. One of them carries <code>X-Admin: false</code>.</li>
-<li>Change it to <code>X-Admin: true</code>.</li>
-<li>The UI still shows nothing, but the flag is in the <strong>response</strong>.</li>
-</ol>
-<p><strong>Lesson.</strong> Never trust a header the client can set, and check the raw response, not only what the page renders.</p>
-<p><code>nexus{1_h34d3r_m4k3_u_4n_4dm1111111111n}</code></p>
+<p><strong>SOLUTION :</strong></p>
+<p>Intercept the requests =&gt; see a header that says admin false <code>X-Admin:false</code> =&gt; change it to true : <code>X-Admin:true</code> =&gt; u can not see the flag in the UI , but u can see it in the response .</p>
+<p><strong>flag :</strong> <code>nexus{1_h34d3r_m4k3_u_4n_4dm1111111111n}</code></p>
 <hr />
 <h2>HPP</h2>
 <blockquote>
-<p>"Pollution is a big problem in the world... can it reach HTTP? Can you read the secret book and get the flag?"</p>
+<p>pollution is a big problem in the world ....<br />
+can it reach the HTTP ?<br />
+can u read the secret book and get the flag ?</p>
 </blockquote>
-<p><strong>Solution.</strong> HTTP Parameter Pollution is a good way around restrictions, especially on IDOR bugs.</p>
-<pre><code>GET /book?id=1       -&gt;  403 Forbidden
-GET /book?id=3       -&gt;  200 OK
-GET /book?id=2&amp;id=1  -&gt;  flag
+<p><strong>SOLUTION :</strong></p>
+<p>HPP : HTTP Parameter Pollution , is a really good idea to bypass restrictions , specially in IDOR bugs .</p>
+<pre><code>?id=1       =&gt; 403 Forbidden
+?id=3       =&gt; 200 OK
+?id=2&amp;id=1  =&gt; bom get the flag
 </code></pre>
-<p>The access check and the data lookup read the duplicated parameter differently, so the check sees an allowed id while the lookup returns book 1.</p>
-<p><code>nexus{HTTP_p4r4m3t3r_p0lut10n_b000000000000m}</code></p>
+<p><strong>flag :</strong> <code>nexus{HTTP_p4r4m3t3r_p0lut10n_b000000000000m}</code></p>
 <hr />
 <h2>Money laundering</h2>
 <blockquote>
-<p>"I have a lot of cash, I need to clear it. Can you help me?"</p>
+<p>i have a lot of cash , i need to clear it<br />
+can u help me ?</p>
 </blockquote>
-<p><strong>Solution.</strong></p>
-<ol>
-<li>"Cash" is a pun on <strong>cache</strong>. The target sits behind a caching layer, like most CDNs. Responses are stored under a key so repeat requests are cheap.</li>
-<li>The method used to clear a cache is <code>PURGE</code>, and it should be forbidden to normal users.</li>
-<li>Try it: <code>403 Forbidden</code>.</li>
-<li>Any <code>403</code> is worth trying to bypass. A bit of research turns up method-override headers, which many proxies and frameworks accept.</li>
-<li>The proxy checks the method of the request, sees a harmless <code>GET</code> and lets it through. It forgets that a header can change the method again further down.</li>
-</ol>
-<p>Final exploit: send a normal <code>GET /</code> with this header added.</p>
+<p><strong>SOLUTION :</strong></p>
+<ul>
+<li>the word cash was a hint about cache ( CDN cache ) , websites use caching servers to help their servers and make the UX better , by caching responses of requests based on a key , expecting that the user will request them a lot of times .</li>
+<li><code>PURGE</code> is the method used to clear the cache , this method is supposed to be protected and forbidden to normal users .</li>
+<li>try using the method , and yes we get a 403 Forbidden .</li>
+<li>but thinking like a hacker , any 403 we will try to bypass it .</li>
+<li>after a small vibe hacking or googling , we find that there are a lot of methods to bypass that .</li>
+<li>one of them is using the header : <code>X-HTTP-Method-Override</code></li>
+<li>this header is accepted by a lot of proxy servers , it overrides the request method and uses its value .</li>
+<li>so the proxy checks the request method , sees that it is a GET request , so it is ok , but forgets to check the headers .</li>
+</ul>
+<p>final exploit : add the header</p>
 <pre><code>X-HTTP-Method-Override: PURGE
 </code></pre>
-<p><strong>Lesson.</strong> Apply access control after method overrides are resolved, or do not accept override headers at all.</p>
-<p><code>nexus{D0nt_l3tt_th3m_cl34n_ur_C4Ch3}</code></p>
+<p><strong>flag :</strong> <code>nexus{D0nt_l3tt_th3m_cl34n_ur_C4Ch3}</code></p>
 <hr />
-<p>Source code and Docker files for every challenge: <a href="https://github.com/0xsila/nexus-nextrace-2025-challenges">nexus-nextrace-2025-challenges</a>.</p></article>
-  <div class="post-cta"><a class='btn ghost' href='https://github.com/0xsila/nexus-nextrace-2025-challenges' target='_blank' rel='noopener'>Challenge source &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
-  <div class="pn-row"><a class='pn' href='web-daveloper.html'><small>Previous</small><b>web daveloper</b></a><span></span></div>
-</main>
-<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
-</body></html>
+<p>Source of all the challenges : <a href="https://github.com/0xsila/nexus-nextrace-2025-challenges">nexus-nextrace-2025-challenges</a></p></article>
+
+<p><a href="https://github.com/0xsila/nexus-nextrace-2025-challenges">Challenge source on GitHub</a></p>
+<div class="pn"><a href="web-daveloper.html">previous: web daveloper</a><span></span></div>
+<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>

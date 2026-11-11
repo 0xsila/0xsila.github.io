@@ -1,26 +1,18 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dz-Kitab · 0xsila</title>
-<meta name="description" content="IDOR protected by a naive check, broken with a FAT GET plus HTTP parameter pollution.">
-<meta name="theme-color" content="#0a0a0c">
+<title>Dz-Kitab - 0xsila</title>
+<meta name="description" content="IDOR protected by a naive check, broken with FAT GET and HTTP parameter pollution.">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/style.css">
-</head><body class="post-page">
-<div class="glow" aria-hidden="true"></div>
-<header class="nav"><div class="wrap nav-in">
-  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
-  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
-</div></header>
-<main class="wrap post">
-  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
-  <p class="eyebrow">NEXTHUNT 2025</p>
-  <h1>Dz-Kitab</h1>
-  <p class="lede">IDOR protected by a naive check, broken with a FAT GET plus HTTP parameter pollution.</p>
-  <div class="tags"><span class='tag'>IDOR</span><span class='tag'>FAT GET</span><span class='tag'>HPP</span></div>
-  <article class="prose"><h2>Challenge Name</h2>
+</head><body><div class="wrap">
+<header class="top"><a href="../index.html"><b>0xsila</b></a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
+<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<h1>Dz-Kitab</h1>
+<p class="meta">CTF challenge writeup &middot; NEXTHUNT 2025 &middot; author: 0xsila</p>
+<article class="prose"><h2>Challenge Name</h2>
 <p><strong>Dz-Kitab</strong></p>
 <h2>Challenge Description</h2>
 <p>i have an amazing team for my first semester project<br />
@@ -42,7 +34,8 @@ Tip : choose ur team carfully</p>
 <li>Initial Enumeration</li>
 </ol>
 <p>The application exposes an endpoint similar to:</p>
-<p>GET /book?id=2</p>
+<pre><code>GET /book?id=2
+</code></pre>
 <p>Behavior observed:</p>
 <p>id=1 → Forbidden (contains the flag)</p>
 <p>id=2 → Allowed (public book)</p>
@@ -54,9 +47,11 @@ Tip : choose ur team carfully</p>
 <p>The server accepts a request body on GET requests</p>
 <p>Parameters sent in the body are parsed normally</p>
 <p>Example:</p>
-<p>GET /book?id=2 HTTP/1.1<br />
-Content-Type: application/x-www-form-urlencoded</p>
-<p>id=1</p>
+<pre><code class="language-http">GET /book?id=2 HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+id=1
+</code></pre>
 <p>This is known as a FAT GET.</p>
 <ol start="3">
 <li>HTTP Parameter Pollution (HPP)</li>
@@ -77,24 +72,27 @@ Content-Type: application/x-www-form-urlencoded</p>
 </ol>
 <p>By combining FAT GET + HPP, we fully bypass the restriction.</p>
 <p>Final exploit request:</p>
-<p>curl -X GET http://ctf.nexus-security.club:3555/book?id=2 \<br />
-  -H "Content-Type: application/x-www-form-urlencoded" \<br />
-  -d "id=1"<br />
-5. Flag Retrieval</p>
+<pre><code class="language-bash">curl -X GET &quot;http://ctf.nexus-security.club:3555/book?id=2&quot; \
+  -H &quot;Content-Type: application/x-www-form-urlencoded&quot; \
+  -d &quot;id=1&quot;
+</code></pre>
+<ol start="5">
+<li>Flag Retrieval</li>
+</ol>
 <p>The server responds with Book #1, which contains the flag:</p>
-<p>Flag: nexus{f4t_g3t++http_p4r4m3t3r_p0lut10n}</p>
+<p><strong>Flag:</strong> <code>nexus{f4t_g3t++http_p4r4m3t3r_p0lut10n}</code></p>
 <h2>some unintended solution :</h2>
 <ul>
-<li>Check author note that challenge doesn't require brute forcing =&gt; what you see (endpoints) is what you should attack</li>
+<li>Check the author note: the challenge doesn't require brute forcing =&gt; what you see (endpoints) is what you should attack</li>
 <li>Send a request to / and check X-Powered-By header =&gt; you know it's express</li>
 <li>Send a request to /book?id=2 =&gt; book arrives, use id=1 and book doesn't =&gt; you know you need to   access book with id 1</li>
 <li>Since you're dealing with express and query strings, you look up how query strings are handled there =&gt; find qs and think of how to bypass the assumed condition</li>
 </ul>
-<p>Working payload<br />
-<code>/book?id[0]=2&amp;id[1][]=1</code></p>
-<p>the unintended solution from : hxuu , didicas didicas</p></article>
-  <div class="post-cta"><a class='btn ghost' href='https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges/tree/main/Dz-Kitab' target='_blank' rel='noopener'>Challenge source &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
-  <div class="pn-row"><a class='pn' href='1xbet.html'><small>Previous</small><b>1xbet</b></a><a class='pn' href='gofrita.html'><small>Next</small><b>gofrita</b></a></div>
-</main>
-<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
-</body></html>
+<p>Working payload</p>
+<pre><code>/book?id[0]=2&amp;id[1][]=1
+</code></pre>
+<p>the unintended solution is from : hxuu , didicas</p></article>
+
+<p><a href="https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges/tree/main/Dz-Kitab">Challenge source on GitHub</a></p>
+<div class="pn"><a href="1xbet.html">previous: 1xbet</a><a href="gofrita.html">next: gofrita</a></div>
+<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>

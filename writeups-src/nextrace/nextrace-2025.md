@@ -1,118 +1,116 @@
-# NEXTRACE 2025: six web challenges, one writeup
+# NEXTRACE 2025: all my challenges in one writeup
 
-**Author: 0xsila** (Money laundering co-written with dhia)
+**Author** : 0xsila (Money laundering with dhia)
 
-NEXTRACE was the entry-level round of the Nexus Security Club CTF. I wrote six web challenges for it, and none of them needs more than a browser, DevTools and Burp Suite. The goal was to teach one idea per challenge: **the client is not a security boundary**, and every `403` is a hint, not a wall.
-
-| Challenge | Idea | Trick |
-|---|---|---|
-| Rendez-Vous | DevTools | Read the page source |
-| Inspect V2 | DevTools | Remove an overlay, enable a disabled button |
-| Passw0rd | Response manipulation | Flip `false` to `true` in the response |
-| Headers | Broken access control | Change `X-Admin: false` to `true` |
-| HPP | HTTP parameter pollution | `?id=2&id=1` |
-| Money laundering | Web cache + method override | `X-HTTP-Method-Override: PURGE` |
+NEXTRACE was an easy CTF, so instead of six small writeups here is one. Six web challenges, each one is about a simple idea : the client is not a security boundary, and any 403 is just a start.
 
 ---
 
 ## Rendez-Vous
 
-> "la prochaine rendez-vous est la semaine prochaine. Cordialement"
+> la prochaine rendez-vous est la semaine prochaine
+> Cordialement
 
-**Solution.** Inspect the page and the flag is there. It is the shortest challenge on purpose: always look at the source before reaching for tools.
+**SOLUTION :**
 
-`nexus{4lwaYS_1n5p3Ct_surpr1s3_M3}`
+- inspect the page , and get the flag .
+
+**flag :** `nexus{4lwaYS_1n5p3Ct_surpr1s3_M3}`
 
 ---
 
 ## Inspect V2
 
-> "Hey Agent, you solved the first version of Inspect quite easily. Can you handle this new and improved version?"
+> Hey Agent,
+> you solved the first version of Inspect quite easily.
+> can you handle this new and improved version ?
 
-**Solution.**
+**SOLUTION :**
 
-1. Open DevTools and inspect the page.
-2. Remove the big image (delete its `src`, or delete the whole tag) so it stops covering the page.
-3. Behind it sits a **disabled** button. Remove the `disabled` attribute.
-4. Click it and the flag appears.
+- inspect the page .
+- remove the big image by removing src for the image tag , or just removing all the tag .
+- we see a disabled button , enable it .
+- click the button and get the flag .
 
-`nexus{1n5p3ct_c4n_d000_4_l0t_0f_th1ng55555}`
+**flag :** `nexus{1n5p3ct_c4n_d000_4_l0t_0f_th1ng55555}`
 
 ---
 
 ## Passw0rd
 
-> "oh, I forgot my password... let's see what we will get in the response... maybe changing something will let us break the logic."
+> oh , i forgot my password ......
+> lets see what we will get in the response ....
+> maybe changing something will let us break the logic .....
 
-**Solution.**
+**SOLUTION :**
 
-1. Enter any random password with Burp's proxy on.
-2. Intercept the **response** of the request that checks the password.
-3. Change `false` to `true`.
-4. The frontend believes it and shows the flag.
+- enter any random password .
+- click enter , with proxy open in burp .
+- intercept the response of the request that checks the password .
+- change `false` => `true` .
+- and bom get the flag .
 
-**Lesson.** If the browser decides whether you are authenticated from a value in the response, you can decide it for the browser.
-
-`nexus{R3sp0ns3_M4n1pul4Ti0n_is_P0werFull}`
+**flag :** `nexus{R3sp0ns3_M4n1pul4Ti0n_is_P0werFull}`
 
 ---
 
 ## Headers
 
-> "The language of servers is headers, do you know how to speak it? Can you be the admin?"
+> the language of servers is headers , do u know how to speak it ?
+> can u be the admin ?
 
-**Solution.**
+**SOLUTION :**
 
-1. Intercept the requests. One of them carries `X-Admin: false`.
-2. Change it to `X-Admin: true`.
-3. The UI still shows nothing, but the flag is in the **response**.
+Intercept the requests => see a header that says admin false `X-Admin:false` => change it to true : `X-Admin:true` => u can not see the flag in the UI , but u can see it in the response .
 
-**Lesson.** Never trust a header the client can set, and check the raw response, not only what the page renders.
-
-`nexus{1_h34d3r_m4k3_u_4n_4dm1111111111n}`
+**flag :** `nexus{1_h34d3r_m4k3_u_4n_4dm1111111111n}`
 
 ---
 
 ## HPP
 
-> "Pollution is a big problem in the world... can it reach HTTP? Can you read the secret book and get the flag?"
+> pollution is a big problem in the world ....
+> can it reach the HTTP ?
+> can u read the secret book and get the flag ?
 
-**Solution.** HTTP Parameter Pollution is a good way around restrictions, especially on IDOR bugs.
+**SOLUTION :**
+
+HPP : HTTP Parameter Pollution , is a really good idea to bypass restrictions , specially in IDOR bugs .
 
 ```
-GET /book?id=1       ->  403 Forbidden
-GET /book?id=3       ->  200 OK
-GET /book?id=2&id=1  ->  flag
+?id=1       => 403 Forbidden
+?id=3       => 200 OK
+?id=2&id=1  => bom get the flag
 ```
 
-The access check and the data lookup read the duplicated parameter differently, so the check sees an allowed id while the lookup returns book 1.
-
-`nexus{HTTP_p4r4m3t3r_p0lut10n_b000000000000m}`
+**flag :** `nexus{HTTP_p4r4m3t3r_p0lut10n_b000000000000m}`
 
 ---
 
 ## Money laundering
 
-> "I have a lot of cash, I need to clear it. Can you help me?"
+> i have a lot of cash , i need to clear it
+> can u help me ?
 
-**Solution.**
+**SOLUTION :**
 
-1. "Cash" is a pun on **cache**. The target sits behind a caching layer, like most CDNs. Responses are stored under a key so repeat requests are cheap.
-2. The method used to clear a cache is `PURGE`, and it should be forbidden to normal users.
-3. Try it: `403 Forbidden`.
-4. Any `403` is worth trying to bypass. A bit of research turns up method-override headers, which many proxies and frameworks accept.
-5. The proxy checks the method of the request, sees a harmless `GET` and lets it through. It forgets that a header can change the method again further down.
+- the word cash was a hint about cache ( CDN cache ) , websites use caching servers to help their servers and make the UX better , by caching responses of requests based on a key , expecting that the user will request them a lot of times .
+- `PURGE` is the method used to clear the cache , this method is supposed to be protected and forbidden to normal users .
+- try using the method , and yes we get a 403 Forbidden .
+- but thinking like a hacker , any 403 we will try to bypass it .
+- after a small vibe hacking or googling , we find that there are a lot of methods to bypass that .
+- one of them is using the header : `X-HTTP-Method-Override`
+- this header is accepted by a lot of proxy servers , it overrides the request method and uses its value .
+- so the proxy checks the request method , sees that it is a GET request , so it is ok , but forgets to check the headers .
 
-Final exploit: send a normal `GET /` with this header added.
+final exploit : add the header
 
 ```
 X-HTTP-Method-Override: PURGE
 ```
 
-**Lesson.** Apply access control after method overrides are resolved, or do not accept override headers at all.
-
-`nexus{D0nt_l3tt_th3m_cl34n_ur_C4Ch3}`
+**flag :** `nexus{D0nt_l3tt_th3m_cl34n_ur_C4Ch3}`
 
 ---
 
-Source code and Docker files for every challenge: [nexus-nextrace-2025-challenges](https://github.com/0xsila/nexus-nextrace-2025-challenges).
+Source of all the challenges : [nexus-nextrace-2025-challenges](https://github.com/0xsila/nexus-nextrace-2025-challenges)

