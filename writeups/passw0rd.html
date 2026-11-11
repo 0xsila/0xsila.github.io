@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Passw0rd · 0xsila</title>
+<meta name="description" content="Intercept the password check and flip false to true.">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body class="post-page">
+<div class="glow" aria-hidden="true"></div>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
+  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
+</div></header>
+<main class="wrap post">
+  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
+  <p class="eyebrow">NEXTRACE 2025</p>
+  <h1>Passw0rd</h1>
+  <p class="lede">Intercept the password check and flip false to true.</p>
+  <div class="tags"><span class='tag'>Response manipulation</span></div>
+  <article class="prose"><p><strong>Author</strong> : 0xsila </p>
+<h2>Challenge Name</h2>
+<p><strong>Passw0rd</strong></p>
+<h2>Challenge Description :</h2>
+<blockquote>
+<p>oh , i forgot my password ......<br />
+lets see what we will get in the response ....<br />
+maybe changing something will let us breack the logic .....</p>
+</blockquote>
+<h2>SOLUTION :</h2>
+<ul>
+<li>eneter any random password .</li>
+<li>click enter , with proxy open in burp .</li>
+<li>intercept the response of the request that check the password .</li>
+<li>change false =&gt; true .</li>
+<li>and bom get the flag .</li>
+</ul>
+<p><strong>flag :</strong><br />
+nexus{R3sp0ns3_M4n1pul4Ti0n_is_P0werFull}</p></article>
+  <div class="post-cta"><a class='btn ghost' href='https://github.com/0xsila/nexus-nextrace-2025-challenges/tree/main/Response%20Manipulationn' target='_blank' rel='noopener'>Challenge source &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
+  <div class="pn-row"><a class='pn' href='headers.html'><small>Previous</small><b>Headers</b></a><a class='pn' href='inspect-v2.html'><small>Next</small><b>Inspect V2</b></a></div>
+</main>
+<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
+</body></html>

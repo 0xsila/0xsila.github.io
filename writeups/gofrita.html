@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>gofrita · 0xsila</title>
+<meta name="description" content="Iframe injection escalated to SSRF over the gopher protocol, then an X-Original-URL header bypass.">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body class="post-page">
+<div class="glow" aria-hidden="true"></div>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
+  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
+</div></header>
+<main class="wrap post">
+  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
+  <p class="eyebrow">NEXTHUNT 2025</p>
+  <h1>gofrita</h1>
+  <p class="lede">Iframe injection escalated to SSRF over the gopher protocol, then an X-Original-URL header bypass.</p>
+  <div class="tags"><span class='tag'>SSRF</span><span class='tag'>Gopher</span><span class='tag'>Impact escalation</span></div>
+  <article class="prose"><p><strong>Author</strong> : 0xsila </p>
+<h2>Challenge Name</h2>
+<p><strong>gofrita</strong></p>
+<h2>Challenge Description :</h2>
+<p>When script kiddies report anything they find, architects try to escalate it to maximize the impact.<br />
+Which one are you?</p>
+<p>a lot of bugbounty hunters or hackers hhhh report any bug they found (open redirect , html injection , user enumeration ....) , but the real architecturs try to maximize the impact ( open redirct =&gt; xss or oauth bug , html injection =&gt; xss or ssrf )</p>
+<h2>Vulnerability Chain</h2>
+<p><strong>Iframe Injection → SSRF → Gopher Protocol → Header Bypass (<code>X-Original-URL</code>)</strong></p>
+<hr />
+<h2>Challenge Overview</h2>
+<p>The goal of <strong>gofrita</strong> is to exploit a chained vulnerability that starts from a <strong>client-side iframe injection</strong> and ends with a <strong>Server-Side Request Forgery (SSRF)</strong> using the <strong>Gopher protocol</strong>, while bypassing internal access restrictions via the <strong><code>X-Original-URL</code></strong> header.</p>
+<hr />
+<h2>Steps :</h2>
+<p>The application allows user-controlled input to reflected in the UI without proper sanitization , the player start inject and try all what he know .<br />
+finnaly he got : <strong>html injection</strong> , and a <strong>self xss</strong> that he can not escalte to nothing ( in real world , try to chaine it with csrf or web cache poisining )</p>
+<p><img alt="alt text" src="../assets/writeups/gofrita/image-2.png" /></p>
+<p>so the player continue with the <strong>html injection</strong> , the max impact now will be <strong>iframe injection</strong> ( in bugbounty , it will be considred as medium or even high if u got full screen and made a <strong>DoS</strong> )</p>
+<p>thinking again as a ctf player , we still have to get the flag , and we had the <strong>iframe injection</strong> , start thinking for <strong>ssrf</strong> ( that what i hope u think about )</p>
+<p><img alt="alt text" src="../assets/writeups/gofrita/image-1.png" /></p>
+<p>start using hacktricks tips , inject some ssrf paylods from payload all the things , but nothing work , keep seeing errors that told u go to study for exams .</p>
+<p>trying to get some hints from the author ( it was me ) , and he still saying : <strong>try harder</strong></p>
+<p>btw the ctf idea was about gopher , so after the try harder from the player , it suppose that he try the gopher protocol , and start getting some custom errors , now he start being close .</p>
+<p><strong>Why Gopher is powerful:</strong><br />
+Gopher enables sending <strong>raw TCP payloads</strong>, which means we can:<br />
+- Fully control the request structure<br />
+- Inject custom HTTP headers<br />
+- Interact with internal services directly</p>
+<p>the player suppose to undertand each error is for what , and start customize his paylod .</p>
+<p>after a lot of trying harder : the player arrive to this point of paylod :</p>
+<p><strong><code>&lt;iframe src="gopher://127.0.0.1:3333/_GET%20/flag.txt%20HTTP/1.1%0d%0aHost:%20127.0.0.1%0d%0a%0d%0a%0d%0a"&gt;</code></strong></p>
+<p>here a lot of players stop playing and start complain about the challenge , and saying : it is guessy</p>
+<p>but the real winners continue and go deeper , thinkig what will the author block ?</p>
+<p>when the player start thinking that i blocked him to access directly to the flag , this is the last step between him and the flag</p>
+<p>searching about some bypass of urls blcking , and they will find : <code>X-Original-URL</code></p>
+<p>a lot of proxy servers trust this header , which allow us to do a lot of things with that header .</p>
+<p>extra idea : chaine it with web cache poisining is great idea .</p>
+<p>the final paylod: </p>
+<pre><code class="language-html">&lt;iframe src=&quot;gopher://127.0.0.1:3333/_GET%20/blablabla%20HTTP/1.1%0d%0aHost:%20127.0.0.1%0d%0aX-Original-URL:%20/flag.txt%0d%0a%0d%0a&quot;&gt;&lt;/iframe&gt;
+</code></pre>
+<p>and get the flag : </p>
+<p><img alt="alt text" src="../assets/writeups/gofrita/image-3.png" /></p></article>
+  <div class="post-cta"><a class='btn ghost' href='https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges/tree/main/gofrita' target='_blank' rel='noopener'>Challenge source &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
+  <div class="pn-row"><a class='pn' href='dz-kitab.html'><small>Previous</small><b>Dz-Kitab</b></a><a class='pn' href='web-daveloper.html'><small>Next</small><b>web daveloper</b></a></div>
+</main>
+<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
+</body></html>

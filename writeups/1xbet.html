@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1xbet · 0xsila</title>
+<meta name="description" content="A rigged casino. Mass assignment, content-type confusion and a frontend that trusts status codes.">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body class="post-page">
+<div class="glow" aria-hidden="true"></div>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
+  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
+</div></header>
+<main class="wrap post">
+  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
+  <p class="eyebrow">NEXTHUNT 2025</p>
+  <h1>1xbet</h1>
+  <p class="lede">A rigged casino. Mass assignment, content-type confusion and a frontend that trusts status codes.</p>
+  <div class="tags"><span class='tag'>Mass assignment</span><span class='tag'>Response manipulation</span><span class='tag'>Business logic</span></div>
+  <article class="prose"><h2>Challenge Name</h2>
+<p><strong>1xbet</strong></p>
+<h2>Challenge Description</h2>
+<p>this machine eat all my money and still didnt win , can u beat it ?</p>
+<hr />
+<h2>Vulnerability Chain</h2>
+<p><strong>Mass Assignment → Content-Type Confusion → Inconsistent Backend Validation → Response Manipulation → Business Logic Abuse → Flag Access</strong></p>
+<hr />
+<h2>Challenge Overview</h2>
+<h2>Challenge Overview</h2>
+<p>The goal of <strong>1xbet</strong> is to turn a normal bet into a <strong>winning bet</strong> without proper authorization.</p>
+<p>Key characteristics of the application:</p>
+<ul>
+<li>Bets are normally submitted using a classic form-encoded request</li>
+<li>The backend also accepts JSON input</li>
+<li>Internal bet objects contain a hidden property: <code>isWinner</code></li>
+<li>The frontend relies entirely on HTTP status codes to decide whether to continue the bet validation flow</li>
+</ul>
+<h2>Even when the backend rejects malformed requests with a <code>400 Bad Request</code>, part of the internal state is already modified.</h2>
+<h2>Steps :</h2>
+<ul>
+<li>
+<p>afetr signup and login , we see a casion machine that eating our money , and u will never win and get the flag if u playes stright .</p>
+</li>
+<li>
+<p>intercept the request of bet , and start analyse the request and response , and start thinkig how i will win .</p>
+</li>
+<li>
+<p>a normal bet always respond with : {"result":"loss","bet":{"isWinner":false,"payout":0}...}</p>
+</li>
+<li>interesting right ? , how can i now changing false to true .</li>
+<li>the first thing trying a normal response manipulation , but nothing really change .</li>
+<li>another idea is mass assigment , trying that with json body : </li>
+</ul>
+<p><code>"curl -X POST http://ctf.nexus-security.club:4999/api/bet -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"amount":100,"isWinner":true}'</code>"</p>
+<ul>
+<li>we see in the reponse that we got : "isWinner":true</li>
+<li>but it reponse with 400 bad request , and see my wining return nothing .</li>
+<li>
+<p>the main idea was doing the same steps , but intercept the resposne and changing the status code from 400 bad request to 200 ok , a lot of websites take actions corresponding with the status code of teh response .</p>
+</li>
+<li>
+<p>another unintende solution was reading js files and get the endpoint of validation , and send it with the bet id , and wiiiiiiiiiin .</p>
+</li>
+<li>
+<p>check my winnings : <code>curl http://ctf.nexus-security.club:4999/api/winnings \-H "Authorization: Bearer $TOKEN"</code></p>
+</li>
+<li>
+<p>and bom get the flag .</p>
+</li>
+<li><strong>Flag</strong> :<br />
+nexus{lkm4r_7r4m_kh4wty_d1d1c4s_ysf_hhhhhhhh}</li>
+</ul></article>
+  <div class="post-cta"><a class='btn ghost' href='https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges/tree/main/1xbet' target='_blank' rel='noopener'>Challenge source &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
+  <div class="pn-row"><a class='pn' href='business-logic.html'><small>Previous</small><b>The Free Trial That Never Ended</b></a><a class='pn' href='dz-kitab.html'><small>Next</small><b>Dz-Kitab</b></a></div>
+</main>
+<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
+</body></html>

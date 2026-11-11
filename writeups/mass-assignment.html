@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One JSON Field, One Invisible Project Owner · 0xsila</title>
+<meta name="description" content="The server copied everything I sent onto its objects. I told it who created a project (nobody) and when a comment was written (2001).">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body class="post-page">
+<div class="glow" aria-hidden="true"></div>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
+  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
+</div></header>
+<main class="wrap post">
+  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
+  <p class="eyebrow">Bug bounty</p>
+  <h1>One JSON Field, One Invisible Project Owner</h1>
+  <p class="lede">The server copied everything I sent onto its objects. I told it who created a project (nobody) and when a comment was written (2001).</p>
+  <div class="tags"><span class='tag'>Mass assignment</span><span class='tag'>API</span><span class='tag'>HackerOne</span></div>
+  <article class="prose"><p><strong>By 0xsila</strong> · <em>The server copied everything I sent onto its objects. So I told it who made a project (nobody), and when I wrote a comment (2001).</em></p>
+<hr />
+<p>Every hunter has that one private program they love. Mine has a huge collaboration platform: workspaces, projects, files, comments, wiki pages. It also has an <strong>activity feed</strong>, the page admins check to see who did what. That's basically the audit trail.</p>
+<p>And I have a rule: <strong>if a feature exists to hold people accountable, I try to lie to it.</strong></p>
+<p>That's how I found a bug class I now hunt on purpose: mass assignment.</p>
+<hr />
+<h2>What is mass assignment?</h2>
+<p><strong>The short version:</strong> the server takes the JSON you send and copies <em>every field</em> onto a database object, instead of only the fields it meant to accept.</p>
+<p><strong>Why developers do it:</strong> it's lazy and convenient. Instead of writing</p>
+<pre><code class="language-js">project.name = body.name;
+project.avatar = body.avatar;
+</code></pre>
+<p>they write one line that says "copy everything the client sent":</p>
+<pre><code class="language-js">const project = new Project(body);   // vulnerable: trusts every key
+project.save();
+</code></pre>
+<p>Frameworks make this easy (Rails <code>update(params)</code>, Mongoose <code>new Model(req.body)</code>, Spring and Laravel model binding). The dangerous version is <em>shorter</em> than the safe one, which is why it's so common.</p>
+<p><strong>What goes wrong:</strong> a Project isn't only "name" and "avatar". It also has fields the <strong>server</strong> is supposed to control:</p>
+<table>
+<thead>
+<tr>
+<th>Field kind</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ownership</td>
+<td><code>owner</code>, <code>createdBy</code>, <code>userId</code></td>
+</tr>
+<tr>
+<td>Permissions</td>
+<td><code>role</code>, <code>isAdmin</code>, <code>canPublish</code></td>
+</tr>
+<tr>
+<td>Money / plan</td>
+<td><code>price</code>, <code>plan</code>, <code>premium</code></td>
+</tr>
+<tr>
+<td>Timestamps</td>
+<td><code>createdAt</code>, <code>published</code>, <code>modifiedTime</code></td>
+</tr>
+<tr>
+<td>System flags</td>
+<td><code>defaultProject</code>, <code>verified</code>, <code>deleted</code></td>
+</tr>
+</tbody>
+</table>
+<p>The UI has no input for these, so developers forget they're reachable. But the server can't tell "a field the form sent" from "a field I typed myself in the proxy". It just copies.</p>
+<p><strong>The analogy:</strong> a form asks for your name and phone. You scribble "VIP: yes" in the margin. A careful clerk ignores the margin. A lazy clerk types the whole page in, margin note included.</p>
+<p><strong>The fix</strong> is an allow-list: copy <em>only</em> the named fields you expect, and set the rest on the server.</p>
+<pre><code class="language-js">project.name   = body.name;
+project.avatar = body.avatar;
+project.owner  = currentUser.id;   // always server-decided
+</code></pre>
+<h3>My hunting checklist</h3>
+<ol>
+<li><strong>Capture a create or update request.</strong> Note which fields the UI sends.</li>
+<li><strong>Read the response</strong> (or a GET of the same object). Every field you <em>didn't</em> send is a candidate: <code>id</code>, <code>owner</code>, <code>created</code>, <code>published</code>, <code>role</code>, <code>defaultProject</code>...</li>
+<li><strong>Add one candidate field</strong> with a value you can recognize (a weird date, <code>true</code>, your own ID).</li>
+<li><strong>Check the result.</strong> Did the object change?</li>
+<li><strong>Ask what that field controls.</strong> The impact comes from what the field <em>means</em>.</li>
+</ol>
+<p>Here's step 5 doing the work, three times.</p>
+<hr />
+<h2>Bug #1: The invisible project creator</h2>
+<p>Normal flow: a hub member with permission clicks "New project". The project says <strong>Created by: you</strong>, and the activity feed logs it.</p>
+<p>The request:</p>
+<pre><code class="language-json">{&quot;projectName&quot;: &quot;visible&quot;, &quot;avatarType&quot;: &quot;pre-defined&quot;}
+</code></pre>
+<p>I noticed the app has a notion of a <em>default project</em> (the one the system makes for you). I wondered: does the server let <em>me</em> say a project is a default project? So I added one field:</p>
+<pre><code class="language-json">{&quot;projectName&quot;: &quot;hidden&quot;, &quot;defaultProject&quot;: true, &quot;avatarType&quot;: &quot;pre-defined&quot;}
+</code></pre>
+<p>The result:<br />
+- The project was created normally.<br />
+- The owner showed up like it was the <strong>system</strong>, not me.<br />
+- <strong>No entry in the activity feed.</strong></p>
+<p>I could rename it so it didn't look like a default project. Normal-looking, untraceable. Admins lose the ability to answer "who made this?"</p>
+<h2>Bug #2: Time travel through comments</h2>
+<p>Comments on files are part of the design record: approvals, feedback, "yes, ship it". The timestamp matters.</p>
+<p>The comment body had a few fields (actor, parent, text). A <em>saved</em> comment, though, came back with a <code>published</code> field I never sent. So I sent it:</p>
+<pre><code class="language-json">{&quot;body&quot;: &quot;hello&quot;, &quot;published&quot;: &quot;2001-12-10T19:19:19.410Z&quot;}
+</code></pre>
+<p>The comment appeared dated 2001. Any date, past or future.</p>
+<blockquote>
+<p>🏆 <strong>Report resolved · Bounty awarded (Nov 2025)</strong></p>
+</blockquote>
+<h2>Bug #3: Same trick on wiki pages</h2>
+<p>Wiki pages had the same weakness. Adding <code>creationTime</code>, <code>lastModified</code> and <code>modifiedTime</code> to the create request let me backdate or forward-date a page.</p>
+<blockquote>
+<p>🏆 <strong>Report resolved · Bounty awarded (Nov 2025)</strong></p>
+</blockquote>
+<p>Three features, one root cause: <strong>the server trusted the client's JSON.</strong></p>
+<hr />
+<h2>How I thought differently</h2>
+<ul>
+<li><strong>Read responses like a shopping list.</strong> Extra fields in a response are things the server stores. Can I set them myself?</li>
+<li><strong>Think about the field's purpose.</strong> Ownership, timestamps, roles and plans are things only the server should decide.</li>
+<li><strong>Add one field at a time.</strong> Rejection tells you the allow-list; acceptance tells you the bug.</li>
+<li><strong>Go where trust lives.</strong> Audit trails, approvals and ownership are high impact even when the technical change is tiny.</li>
+</ul>
+<h2>Impact</h2>
+<ul>
+<li>Admins can't trace who created a project.</li>
+<li>A member can create projects silently.</li>
+<li>Comments and wiki pages can be backdated, so "who approved what, when" can't be trusted.</li>
+</ul>
+<h2>Fix</h2>
+<ul>
+<li>Allow-list fields on every create and update.</li>
+<li>Set owner, timestamps and system flags on the server only.</li>
+</ul>
+<h2>Bonus: a lesson in testing carefully</h2>
+<p>On a different app in the same program, the create request had no <code>id</code> field because the server picks the next number. When I added my own <code>id</code> with a huge value, it was accepted, and afterwards some older items couldn't be deleted because the counter had jumped.</p>
+<p>Two lessons: client-chosen IDs are mass assignment too, and <strong>don't repeat a destructive test on a shared system</strong>. I stopped, wrote it up, and asked the team not to re-run my PoC.</p>
+<h2>What I took from it</h2>
+<ul>
+<li>If the response has fields you didn't send, try sending them.</li>
+<li>Audit-trail fields are worth forging in a report because the impact is about trust.</li>
+<li>Test carefully. A "harmless" extra field can break real data.</li>
+</ul>
+<hr />
+<p><em>Written by 0xsila.</em><br />
+<strong>Find me on HackerOne:</strong> <a href="https://hackerone.com/0xsila">https://hackerone.com/0xsila</a></p></article>
+  <div class="post-cta"><a class='btn ghost' href='https://hackerone.com/0xsila' target='_blank' rel='noopener'>HackerOne profile &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
+  <div class="pn-row"><a class='pn' href='idor-series.html'><small>Previous</small><b>Change One Number, Own Someone Else&#x27;s Data</b></a><a class='pn' href='response-manipulation.html'><small>Next</small><b>The Server Said No. I Said Yes.</b></a></div>
+</main>
+<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
+</body></html>

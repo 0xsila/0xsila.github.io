@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Server Said No. I Said Yes. · 0xsila</title>
+<meta name="description" content="Four response-manipulation bugs: password-protected share links, locked features and three flavours of OTP bypass.">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body class="post-page">
+<div class="glow" aria-hidden="true"></div>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
+  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
+</div></header>
+<main class="wrap post">
+  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
+  <p class="eyebrow">Bug bounty</p>
+  <h1>The Server Said No. I Said Yes.</h1>
+  <p class="lede">Four response-manipulation bugs: password-protected share links, locked features and three flavours of OTP bypass.</p>
+  <div class="tags"><span class='tag'>Response manipulation</span><span class='tag'>OTP bypass</span><span class='tag'>HackerOne</span></div>
+  <article class="prose"><p><strong>By 0xsila</strong> · <em>The server says "no". I edit it to say "yes". The app believes me. Four times.</em></p>
+<hr />
+<p>There's a moment in every session when I stop attacking the server and start attacking the <em>browser's trust</em> in the server.</p>
+<p>I was in my favorite private program, poking at a file-sharing feature, when I caught myself thinking: "the server just told the page <code>failed</code>. What if it had said <code>success</code>?"</p>
+<p>That one thought cost me a few hours of sleep and gave me four bugs.</p>
+<hr />
+<h2>What is response manipulation?</h2>
+<p>Most web apps work like this:</p>
+<ol>
+<li>The browser asks: "is this password / code / access right?"</li>
+<li>The server answers: <code>failed</code> or <code>success</code>.</li>
+<li>The <strong>browser</strong> decides what to show next.</li>
+</ol>
+<p>If step 3 is the only place the decision is enforced, then the only thing between me and the content is a word in a JSON response. I run a proxy, pause the response, change one word, and forward it.</p>
+<p><strong>The analogy:</strong> a bouncer shouts "NOT ALLOWED!" to the door guard. I stand between them and swap it for "ALLOWED!". If the door guard believes whatever he hears, I'm in.</p>
+<p><strong>The real bug isn't the edit.</strong> It's that the <strong>server never checks again</strong> when the protected thing is actually requested. If the next step (show the file, save the email, unlock the page) works without the server remembering the check failed, the app trusted the client.</p>
+<blockquote>
+<p>A related idea is a <strong>client-side only restriction</strong>: a rule that lives only in the page, like a greyed-out button or a JavaScript check. Same root cause: the enforcement is in the wrong place.</p>
+</blockquote>
+<hr />
+<h2>Episode 1: The password-protected share link</h2>
+<p>The collaboration hub lets you share a file by link and add a password, so even a leaked link isn't enough.</p>
+<p>I opened the link, got the password screen, typed a wrong password, and caught the response:</p>
+<pre><code class="language-json">{&quot;status&quot;: &quot;failed&quot;}
+</code></pre>
+<p>I changed <code>failed</code> to <code>success</code> and forwarded it. The app opened the file. I could view and download it.</p>
+<p>No password. One word.</p>
+<h2>Episode 2: Same wall, different door</h2>
+<p>The vendor fixed that path. Or so they thought. I went back and looked at what the page loads <em>before</em> it shows the password screen: a metadata request. Its response contained:</p>
+<pre><code class="language-json">{&quot;passwordProtected&quot;: &quot;true&quot;, &quot;downloadEnabled&quot;: &quot;false&quot;}
+</code></pre>
+<p>The page asks that response whether to show the password box. I flipped <code>true</code> to <code>false</code>. Same result: password prompt gone, file open.</p>
+<p><strong>Lesson:</strong> when a fix lands, test the <em>neighbors</em>. If the first bug was "the client trusts a field", look for every other field the client trusts.</p>
+<h2>Episode 3: "Is this feature unlocked?" (it said false)</h2>
+<p>The same hub has a manufacturing add-on that needs a separate license.</p>
+<p>While refreshing the page I noticed a request asking "does this hub have access?":</p>
+<pre><code>POST /api/access/info
+{&quot;hubId&quot;: &quot;&lt;hub_id&gt;&quot;}
+</code></pre>
+<pre><code class="language-json">HTTP/1.1 200 OK
+{&quot;hasAccess&quot;: false}
+</code></pre>
+<p>I changed <code>false</code> to <code>true</code> and forwarded it. The add-on opened with no license.</p>
+<p>Nothing clever. Just reading every response and asking, "what happens if this boolean is the other value?"</p>
+<blockquote>
+<p>🏆 <strong>Report resolved · Bounty awarded (Oct 2025)</strong></p>
+</blockquote>
+<h2>Episode 4: OTP bypass (three flavors)</h2>
+<p>Verification codes are a perfect fit for this bug:</p>
+<ul>
+<li><strong>Change email:</strong> I entered a victim's email, typed a random 6-digit code, and intercepted the check:</li>
+</ul>
+<p><code>POST /api/two-factor-auth/passcode-validate
+  {"verificationCode": "111111", "contact": "&lt;victim_email&gt;"}</code></p>
+<p>The response said the code was wrong. I edited it to say it was right, forwarded it, and the email was accepted without me proving I owned it.<br />
+- <strong>Phone verification during a trial signup:</strong> I took a "verified" response from another of my accounts and pasted it over the failed one.<br />
+- <strong>Signup on a kids' 3D-design platform:</strong> here I didn't even need a proxy. The account worked fully without confirming the email. The check just wasn't enforced.</p>
+<blockquote>
+<p>🏆 <strong>Signup bypass: report triaged · Bounty awarded (Sep 2026)</strong></p>
+</blockquote>
+<p><strong>Why it matters:</strong> a verified email is a trust signal. Now someone can register with <em>your</em> address, or claim an account that isn't theirs.</p>
+<hr />
+<h2>How I thought differently</h2>
+<ul>
+<li><strong>Turn the proxy on and watch the yes/no requests.</strong> Booleans, status words and flags are all candidates.</li>
+<li><strong>Ask: "if I flip this, what changes on screen?"</strong> If the screen changes, the client was making the call.</li>
+<li><strong>Prove the server doesn't re-check.</strong> Download the file, call the next endpoint, save the change.</li>
+<li><strong>After a fix, test sideways.</strong> Same feature, different request.</li>
+</ul>
+<h2>Impact</h2>
+<ul>
+<li>Protected files viewed or downloaded without the password.</li>
+<li>Paid add-ons used without a license.</li>
+<li>Email and phone "verification" that verifies nothing.</li>
+</ul>
+<h2>Fix</h2>
+<ul>
+<li>Enforce the decision on the server every time the protected resource is requested.</li>
+<li>Don't let a flag in a response decide access.</li>
+<li>Tie verification to server-side state (a session that remembers "verified").</li>
+</ul>
+<h2>What I took from it</h2>
+<ul>
+<li>The browser is a hostile environment.</li>
+<li>A boolean in a response is an invitation.</li>
+<li>When a bug is fixed, look at the sibling request.</li>
+</ul>
+<hr />
+<p><em>Written by 0xsila.</em><br />
+<strong>Find me on HackerOne:</strong> <a href="https://hackerone.com/0xsila">https://hackerone.com/0xsila</a></p></article>
+  <div class="post-cta"><a class='btn ghost' href='https://hackerone.com/0xsila' target='_blank' rel='noopener'>HackerOne profile &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
+  <div class="pn-row"><a class='pn' href='mass-assignment.html'><small>Previous</small><b>One JSON Field, One Invisible Project Owner</b></a><a class='pn' href='business-logic.html'><small>Next</small><b>The Free Trial That Never Ended</b></a></div>
+</main>
+<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
+</body></html>

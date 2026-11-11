@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Change One Number, Own Someone Else&#x27;s Data · 0xsila</title>
+<meta name="description" content="Four IDORs in one private program: edit profiles, delete plans and comments, and the empty hubId trick.">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body class="post-page">
+<div class="glow" aria-hidden="true"></div>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
+  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
+</div></header>
+<main class="wrap post">
+  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
+  <p class="eyebrow">Bug bounty</p>
+  <h1>Change One Number, Own Someone Else&#x27;s Data</h1>
+  <p class="lede">Four IDORs in one private program: edit profiles, delete plans and comments, and the empty hubId trick.</p>
+  <div class="tags"><span class='tag'>IDOR</span><span class='tag'>Access control</span><span class='tag'>HackerOne</span></div>
+  <article class="prose"><p><strong>By 0xsila</strong> · <em>One bug class, four different spots, one habit: change the ID and see what happens.</em></p>
+<hr />
+<p>It was one of those late nights where the coffee is cold and the proxy history is long. I was deep in my favorite private program, the one I keep coming back to because every new feature feels like a fresh playground.</p>
+<p>I didn't have a grand plan. I just had one question I ask on every target:</p>
+<blockquote>
+<p>"When I click a button, which request fires, and what ID is in it?"</p>
+</blockquote>
+<p>That question gave me four bugs. Let me walk you through them.</p>
+<hr />
+<h2>First, what is an IDOR?</h2>
+<p><strong>IDOR = Insecure Direct Object Reference.</strong> Fancy name, simple idea: the app identifies a thing (a profile, a plan, a comment) by an ID you can see and change, and it never asks <em>"does this thing belong to you?"</em></p>
+<p>In code, the bug looks like this:</p>
+<pre><code class="language-js">// vulnerable: checks you're logged in, but not that the plan is yours
+app.delete(&quot;/plans/:id&quot;, requireLogin, (req, res) =&gt; {
+  db.plans.delete(req.params.id);
+});
+</code></pre>
+<p>The safe version adds one condition:</p>
+<pre><code class="language-js">db.plans.delete({ id: req.params.id, owner: currentUser.id });
+</code></pre>
+<p>That tiny <code>owner</code> check is the whole difference between secure and "anyone can delete anything".</p>
+<p><strong>The hotel analogy:</strong> your key card opens room 214 because the door reads the number on it. An IDOR is a hotel where you can type <em>any</em> room number and the door opens, because the lock asks "is this a valid room?" and not "is this <em>your</em> room?"</p>
+<p>I ask two questions every time:<br />
+1. <strong>Can I find other people's IDs?</strong> (public profiles, lists, share links, error messages)<br />
+2. <strong>Does the server check ownership when I use one?</strong></p>
+<p>Both answers "yes / no"? That's an IDOR.</p>
+<hr />
+<h2>Episode 1: "I'd like to edit someone else's profile, please"</h2>
+<p>The account page lets you edit your name, bio, company, job title, address, website, even your language and email preferences. Each save sends a request with an <code>id</code> in the body.</p>
+<pre><code class="language-json">{&quot;input&quot;: {&quot;id&quot;: &quot;&lt;user_id&gt;&quot;, &quot;name&quot;: &quot;New Name&quot;}}
+</code></pre>
+<p>The ID looked random, so I almost moved on. Then I asked the better question: <strong>where else does this ID show up?</strong></p>
+<p>I opened a random user's public forum profile with my proxy on. And there it was, the same ID, sitting in a response field. Public to everyone.</p>
+<p>So the chain was:<br />
+1. Grab a victim's ID from their public profile.<br />
+2. Swap it into my own "save name" request.<br />
+3. The server says "sure!" and renames them.</p>
+<p>It checked that I was logged in. It never checked that the ID was <em>mine</em>.</p>
+<blockquote>
+<p><strong>Why random IDs don't save you:</strong> this is the difference between <em>sequential</em> IDs (<code>1001, 1002, ...</code>, trivial to guess) and <em>unpredictable</em> ones (long random strings). Unpredictable IDs make step 1 harder. They don't fix step 2. If the ID leaks anywhere, the bug is back.</p>
+</blockquote>
+<p><strong>My mistake:</strong> I submitted each field as its own report. Nine fields, one root cause. If you find this pattern, send <strong>one</strong> report ("any user's profile can be edited") and list the fields inside. Triagers love root causes.</p>
+<hr />
+<h2>Episode 2: The planning tool with numbered plans</h2>
+<p>Next stop: a small planning/assessment tool in the same program. Here the IDs weren't hidden at all. Plans were numbered <code>21653</code>, <code>21654</code>, <code>21655</code>... like tickets at a deli counter.</p>
+<pre><code class="language-json">{&quot;operationName&quot;: &quot;DeletePlan&quot;, &quot;variables&quot;: {&quot;id&quot;: &quot;21653&quot;}}
+</code></pre>
+<p>I created a plan, deleted it from the UI, caught the request, and subtracted one from the number. Somebody else's plan vanished.</p>
+<p>Then I got greedy (in a good way). Every button on the plan card is another request with the same shape: edit, rename, archive, unarchive, share, edit notes, cancel a transfer. All of them took an ID, none checked the owner. One even leaked the <strong>email address</strong> a plan was being transferred to.</p>
+<p><strong>How I thought differently:</strong> I stopped testing "delete" and asked <em>"what are all the verbs on this object?"</em> Clicking every button with my proxy on handed me the whole attack surface.</p>
+<hr />
+<h2>Episode 3: Deleting other people's comments</h2>
+<p>Back in the collaboration hub. Files can have comments. The comment list returns every comment ID, and the delete request puts the comment ID in the URL.</p>
+<pre><code>DELETE /api/files/&lt;file_id&gt;/comments/&lt;comment_id&gt;
+</code></pre>
+<ol>
+<li>As the attacker, open a file in a shared project and read the comment IDs.</li>
+<li>Delete one of my own comments and capture the request.</li>
+<li>Swap in the victim's comment ID.</li>
+<li>Gone.</li>
+</ol>
+<p><strong>Mindset:</strong> if the app <em>shows</em> me an ID in one request, I immediately try to <em>use</em> it in another. <strong>List → action</strong> is the most reliable IDOR pattern there is.</p>
+<blockquote>
+<p>🏆 <strong>Report resolved · Bounty awarded (Sep 2025)</strong></p>
+</blockquote>
+<hr />
+<h2>Episode 4: The empty <code>hubId</code> trick</h2>
+<p>This is my favorite, because it felt like a magic trick.</p>
+<p>A GraphQL mutation creates a new version of a file with a description. The request had a <code>hubId</code> field, "which workspace is this in?", which the server used to check my access. With my own hub ID against someone else's file, the server correctly said no.</p>
+<p>Then I tried something silly: <strong>keep the field, delete the value.</strong></p>
+<pre><code class="language-json">{&quot;hubId&quot;: &quot;&quot;, &quot;targetId&quot;: &quot;&lt;victim_file&gt;&quot;, &quot;description&quot;: &quot;changed by me&quot;}
+</code></pre>
+<p>The check was probably written as "if a hub ID is present, verify it". An empty string skipped the check and the write went through.</p>
+<blockquote>
+<p>🏆 <strong>Report resolved · Bounty awarded (Nov 2025)</strong></p>
+<p><strong>The lesson:</strong> when a check blocks you, don't only try different values. Try the <em>absence</em> of the value: empty string, <code>null</code>, a missing key, an array instead of a string. Validators are written for the happy path.</p>
+</blockquote>
+<hr />
+<h2>Impact</h2>
+<ul>
+<li>Strangers could edit other users' profiles, delete or alter their plans, and delete their comments.</li>
+<li>Private data (a transfer email) leaked through the same pattern.</li>
+</ul>
+<h2>Fix</h2>
+<ul>
+<li>Check ownership on the server for <strong>every</strong> object access: <code>WHERE id = ? AND owner = ?</code>.</li>
+<li>Treat empty and missing values as <em>invalid</em>, never as "skip the check".</li>
+</ul>
+<h2>What I took from it</h2>
+<ul>
+<li>Find the ID, then find where it leaks.</li>
+<li>Test <strong>every action</strong> on an object, not just the first one.</li>
+<li>When a check blocks you, try blank, null, or missing.</li>
+<li>One root cause, one report.</li>
+</ul>
+<hr />
+<p><em>Written by 0xsila.</em><br />
+<strong>Find me on HackerOne:</strong> <a href="https://hackerone.com/0xsila">https://hackerone.com/0xsila</a></p></article>
+  <div class="post-cta"><a class='btn ghost' href='https://hackerone.com/0xsila' target='_blank' rel='noopener'>HackerOne profile &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
+  <div class="pn-row"><span></span><a class='pn' href='mass-assignment.html'><small>Next</small><b>One JSON Field, One Invisible Project Owner</b></a></div>
+</main>
+<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
+</body></html>

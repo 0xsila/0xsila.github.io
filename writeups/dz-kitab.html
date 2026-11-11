@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dz-Kitab · 0xsila</title>
+<meta name="description" content="IDOR protected by a naive check, broken with a FAT GET plus HTTP parameter pollution.">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body class="post-page">
+<div class="glow" aria-hidden="true"></div>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
+  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
+</div></header>
+<main class="wrap post">
+  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
+  <p class="eyebrow">NEXTHUNT 2025</p>
+  <h1>Dz-Kitab</h1>
+  <p class="lede">IDOR protected by a naive check, broken with a FAT GET plus HTTP parameter pollution.</p>
+  <div class="tags"><span class='tag'>IDOR</span><span class='tag'>FAT GET</span><span class='tag'>HPP</span></div>
+  <article class="prose"><h2>Challenge Name</h2>
+<p><strong>Dz-Kitab</strong></p>
+<h2>Challenge Description</h2>
+<p>i have an amazing team for my first semester project<br />
+one girl used cursor i think to help us<br />
+Tip : choose ur team carfully</p>
+<p>This challenge demonstrates how IDOR can be exploited by chaining FAT GET with HTTP Parameter Pollution (HPP) to bypass access controls and retrieve unauthorized resources.</p>
+<hr />
+<h2>Vulnerability Chain</h2>
+<p><strong>IDOR → FAT GET (GET with Body) → HTTP Parameter Pollution (HPP) → Authorization Bypass → Flag Access</strong></p>
+<hr />
+<h2>Challenge Overview</h2>
+<p>The goal of Dz-Kitab is to access a restricted book resource that should only be available to authorized users.</p>
+<p>The application uses a weak authorization check combined with inconsistent parameter handling:</p>
+<p>Parameters are read from both the URL query string and the request body</p>
+<p>When duplicated parameters exist, the backend applies unexpected precedence rules</p>
+<h2>By abusing FAT GET (sending a request body with a GET request) together with HPP, an attacker can confuse the backend and bypass the ID-based access control.</h2>
+<h2>Steps :</h2>
+<ol>
+<li>Initial Enumeration</li>
+</ol>
+<p>The application exposes an endpoint similar to:</p>
+<p>GET /book?id=2</p>
+<p>Behavior observed:</p>
+<p>id=1 → Forbidden (contains the flag)</p>
+<p>id=2 → Allowed (public book)</p>
+<p>This indicates a classic IDOR scenario protected by a simple ID check.</p>
+<ol start="2">
+<li>Discovering FAT GET Behavior</li>
+</ol>
+<p>During testing with Burp, we notice something interesting:</p>
+<p>The server accepts a request body on GET requests</p>
+<p>Parameters sent in the body are parsed normally</p>
+<p>Example:</p>
+<p>GET /book?id=2 HTTP/1.1<br />
+Content-Type: application/x-www-form-urlencoded</p>
+<p>id=1</p>
+<p>This is known as a FAT GET.</p>
+<ol start="3">
+<li>HTTP Parameter Pollution (HPP)</li>
+</ol>
+<p>Now we have two id parameters:</p>
+<p>id=2 in the URL</p>
+<p>id=1 in the body</p>
+<p>This creates HTTP Parameter Pollution.</p>
+<p>The key vulnerability:</p>
+<p>Authorization logic uses the URL parameter (id=2)</p>
+<p>Data-fetching logic uses the body parameter (id=1)</p>
+<p>So the server checks:</p>
+<p>“User is allowed to access book 2 ✅”</p>
+<p>But then returns:</p>
+<p>“Here is the content of book 1 ❌”</p>
+<ol start="4">
+<li>Bypassing Access Control</li>
+</ol>
+<p>By combining FAT GET + HPP, we fully bypass the restriction.</p>
+<p>Final exploit request:</p>
+<p>curl -X GET http://ctf.nexus-security.club:3555/book?id=2 \<br />
+  -H "Content-Type: application/x-www-form-urlencoded" \<br />
+  -d "id=1"<br />
+5. Flag Retrieval</p>
+<p>The server responds with Book #1, which contains the flag:</p>
+<p>Flag: nexus{f4t_g3t++http_p4r4m3t3r_p0lut10n}</p>
+<h2>some unintended solution :</h2>
+<ul>
+<li>Check author note that challenge doesn't require brute forcing =&gt; what you see (endpoints) is what you should attack</li>
+<li>Send a request to / and check X-Powered-By header =&gt; you know it's express</li>
+<li>Send a request to /book?id=2 =&gt; book arrives, use id=1 and book doesn't =&gt; you know you need to   access book with id 1</li>
+<li>Since you're dealing with express and query strings, you look up how query strings are handled there =&gt; find qs and think of how to bypass the assumed condition</li>
+</ul>
+<p>Working payload<br />
+<code>/book?id[0]=2&amp;id[1][]=1</code></p>
+<p>the unintended solution from : hxuu , didicas didicas</p></article>
+  <div class="post-cta"><a class='btn ghost' href='https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges/tree/main/Dz-Kitab' target='_blank' rel='noopener'>Challenge source &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
+  <div class="pn-row"><a class='pn' href='1xbet.html'><small>Previous</small><b>1xbet</b></a><a class='pn' href='gofrita.html'><small>Next</small><b>gofrita</b></a></div>
+</main>
+<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
+</body></html>

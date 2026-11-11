@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Free Trial That Never Ended · 0xsila</title>
+<meta name="description" content="Business logic bugs that print money: endless trials, plan toggles, member caps and one account with many workspaces.">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body class="post-page">
+<div class="glow" aria-hidden="true"></div>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
+  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
+</div></header>
+<main class="wrap post">
+  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
+  <p class="eyebrow">Bug bounty</p>
+  <h1>The Free Trial That Never Ended</h1>
+  <p class="lede">Business logic bugs that print money: endless trials, plan toggles, member caps and one account with many workspaces.</p>
+  <div class="tags"><span class='tag'>Business logic</span><span class='tag'>Billing</span><span class='tag'>HackerOne</span></div>
+  <article class="prose"><p><strong>By 0xsila</strong> · <em>Nothing is "hacked". The app just forgets its own rules, and the rules are where the money lives.</em></p>
+<hr />
+<p>My favorite private program sells paid features on top of a free trial. Which means somewhere in that product there's a very long list of rules:</p>
+<ul>
+<li>"This module is for paying customers only."</li>
+<li>"This plan allows 15 users."</li>
+<li>"One account, one workspace."</li>
+</ul>
+<p>Every one of those is a promise. My favorite game is finding which promises are only <em>painted on the front door</em>.</p>
+<hr />
+<h2>What is a business logic bug?</h2>
+<p>Most bugs are about <em>code</em> doing something it shouldn't (injecting a script, reading a file). A <strong>business logic bug</strong> is about the <em>rules of the product</em> not being enforced. The code works exactly as written, but the rule was only ever written in the front end, or never written at all.</p>
+<p><strong>Where a rule can live:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Can I bypass it?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hidden or greyed-out button</td>
+<td>Yes, I never have to click it.</td>
+</tr>
+<tr>
+<td>JavaScript check in the page</td>
+<td>Yes, I can send the request myself.</td>
+</tr>
+<tr>
+<td>API / server check</td>
+<td>No. This is where the rule has to be.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The restaurant analogy:</strong> the menu says "no dessert with the kids' meal", but the kitchen will cook one if you shout the order through the pass. The menu is the UI. The kitchen is the API.</p>
+<p><strong>How I hunt:</strong> keep two accounts, one that's <em>allowed</em> and one that <em>isn't</em> (expired trial, low role, free plan). Capture a request from the allowed account and replay it with the other account's token. If it works, the rule never lived on the server.</p>
+<hr />
+<h2>Episode 1: The trial that doesn't end</h2>
+<p>The platform has several modules: quantity estimation, issue tracking, documents, collaboration, spec tools, and more. Each is unlocked by a license or a 30-day trial.</p>
+<p>When my trial ended, the modules went dark in the UI. Great. But the page is only a client. The real work happens in API calls.</p>
+<p>So I tried this:<br />
+1. Using a <strong>fresh account</strong> (trial still active), I used a module and captured a request, say "create a report":</p>
+<p>```<br />
+   POST /api/projects/<project_id>/reports<br />
+   Authorization: Bearer <fresh_account_jwt></p>
+<p>{"title": "Issue detail", "format": "pdf"}<br />
+   ```</p>
+<ol start="2">
+<li>I went to the <strong>expired account</strong>, took its auth token and its project ID, and dropped them into the same request.</li>
+<li><code>201 Created</code>.</li>
+</ol>
+<p>The restriction lived only in the front end. The backend never asked, "does this account still have a license?"</p>
+<p>I repeated it module by module: same bug, different feature. That's the joy of business logic bugs: once you find the pattern, you sweep the product. Later I found the same weakness on a GraphQL API where premium operations didn't check the entitlement at all.</p>
+<blockquote>
+<p>🏆 <strong>GraphQL variant: report triaged · Bounty awarded (Nov 2025)</strong></p>
+</blockquote>
+<p><strong>How I thought about it:</strong> I didn't test "can I do X?" I tested <strong>"is the gate in the UI or on the server?"</strong> Replaying a valid request with an invalid account answers that cleanly.</p>
+<h2>Episode 2: The toggle that said "not on your plan"</h2>
+<p>A hub admin screen had a setting for a premium calculation feature. For non-paying hubs, the toggle was disabled with a message saying it needs a paid plan.</p>
+<p>But settings are saved through a request that carries the <em>whole preferences object</em>. I changed something unrelated (a file-sharing option), intercepted the save, and saw this in the body:</p>
+<pre><code class="language-json">{&quot;shareFileAllowed&quot;: true, &quot;premiumFeatureEnabled&quot;: &quot;false&quot;}
+</code></pre>
+<p>I changed <code>false</code> to <code>true</code> and sent it. The feature turned on. The UI had hidden the toggle, but the endpoint never checked the plan.</p>
+<blockquote>
+<p>🏆 <strong>Report triaged · Bounty awarded (Nov 2026)</strong></p>
+</blockquote>
+<p><strong>Lesson:</strong> a disabled form control isn't a security control. Read the <strong>whole</strong> body of a save request. Fields the UI doesn't let you change are often still accepted.</p>
+<h2>Episode 3: The member cap that didn't hold</h2>
+<p>A free-tier hub has a member cap. The rule existed in the code, but it didn't survive when I tested it with several requests at the same moment. A rule that exists isn't the same as a rule that holds up.</p>
+<blockquote>
+<p>🏆 <strong>Report resolved · Bounty awarded (Sep 2025)</strong></p>
+</blockquote>
+<h2>Episode 4: One account, many workspaces</h2>
+<p>Each account was supposed to own one hub. Sending several "create hub" requests at the same time left one account with several. Odd detail: they didn't show up right away. They became accessible about two hours later.</p>
+<p>I couldn't explain why, but it happened twice. I said so in the report instead of pretending I understood. Honest reports beat confident wrong ones.</p>
+<hr />
+<h2>My business-logic routine</h2>
+<ol>
+<li><strong>List the rules:</strong> limits, roles, plans, one-per-account, expiry dates.</li>
+<li><strong>For each rule, ask where it's enforced.</strong> UI only? API? Database?</li>
+<li><strong>Break it three ways:</strong> skip it (call the API directly), repeat it (send it twice), or send it at the same time.</li>
+<li><strong>Use two accounts.</strong> One valid, one expired or limited. Replay between them.</li>
+<li><strong>Write the impact as money or trust.</strong> "Paid feature for free" is something any business understands.</li>
+</ol>
+<h2>Impact</h2>
+<ul>
+<li>Paid features available forever, for free.</li>
+<li>Plan limits that mean nothing, so the licensing model breaks.</li>
+</ul>
+<h2>Fix</h2>
+<ul>
+<li>Check entitlements on <strong>every</strong> API call, on the server.</li>
+<li>Don't rely on hidden buttons.</li>
+<li>Make limit checks safe against simultaneous requests.</li>
+</ul>
+<h2>What I took from it</h2>
+<ul>
+<li>The UI is a polite suggestion. The API is the rule.</li>
+<li>Replay a request from a good account with a bad account's token.</li>
+<li>If it works on one module, test them all.</li>
+<li>Say "I don't know why" when you don't.</li>
+</ul>
+<hr />
+<p><em>Written by 0xsila.</em><br />
+<strong>Find me on HackerOne:</strong> <a href="https://hackerone.com/0xsila">https://hackerone.com/0xsila</a></p></article>
+  <div class="post-cta"><a class='btn ghost' href='https://hackerone.com/0xsila' target='_blank' rel='noopener'>HackerOne profile &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
+  <div class="pn-row"><a class='pn' href='response-manipulation.html'><small>Previous</small><b>The Server Said No. I Said Yes.</b></a><a class='pn' href='1xbet.html'><small>Next</small><b>1xbet</b></a></div>
+</main>
+<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
+</body></html>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>web daveloper · 0xsila</title>
+<meta name="description" content="A WebDAV endpoint that only allows GET: method override, PROPFIND enumeration and a final header bypass.">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body class="post-page">
+<div class="glow" aria-hidden="true"></div>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="../index.html"><span class="brand-dot"></span>0xsila</a>
+  <nav><a href="../index.html#certs">Certs</a><a href="../index.html#experience">Experience</a><a href="../index.html#writeups">Writeups</a><a href="../index.html#contact">Contact</a></nav>
+</div></header>
+<main class="wrap post">
+  <a class="back" href="../index.html#writeups">&larr; All writeups</a>
+  <p class="eyebrow">NEXTHUNT 2025</p>
+  <h1>web daveloper</h1>
+  <p class="lede">A WebDAV endpoint that only allows GET: method override, PROPFIND enumeration and a final header bypass.</p>
+  <div class="tags"><span class='tag'>WebDAV</span><span class='tag'>Method override</span><span class='tag'>Access control</span></div>
+  <article class="prose"><h2>Challenge Name</h2>
+<p><strong>web daveloper</strong></p>
+<h2>Challenge Description</h2>
+<p>i am just a web daveloper, using copilot and chatgbt to create challenges :(<br />
+i dont know where is flag.txt , can u find it for me !!!<br />
+NOTE: brute forcing is not allowed, you'll be blocked immediatly.</p>
+<p>This challenge demonstrates how <strong>HTTP method confusion and overrides</strong> can be abused to bypass access controls in WebDAV-enabled applications.</p>
+<hr />
+<h2>Vulnerability Chain</h2>
+<p><strong>WebDAV Exposure → PROPFIND Enumeration → Method Restriction → Header Bypass (<code>X-Original-URL</code>) → Flag Access</strong></p>
+<hr />
+<h2>Challenge Overview</h2>
+<h2>The goal of <strong>webdav</strong> is to bypass HTTP method restrictions on a WebDAV-enabled endpoint by abusing the <strong><code>X-HTTP-Method-Override</code></strong> header, allowing the attacker to perform unauthorized actions such as using <strong>PROPFIND</strong> method , to list directories qnd find the path of the flag , try to get the flag , get a 403 forbidden , but beleiving that we r right in the previous steps , so we have to bypass that , small googeling or vibe hacking give us some methods .</h2>
+<h2>Steps :</h2>
+<p>The application exposes a WebDAV endpoint, but it appears to be restricted.</p>
+<p>Basic enumeration shows that:<br />
+- <code>GET</code> requests are allowed<br />
+- <code>OPTIONS</code> show us that only get is allowed , but we some headers that related to webdav .</p>
+<p>This gives the illusion of a secure configuration.</p>
+<p>search and search , asking ur favorite ai agent , and u will start be familiare with webdav .</p>
+<p>being 100% that u should use <strong>PROPFIND</strong> method to list directories qnd get the flag , but bom the method is not allowed .</p>
+<p>bypass bypass bypass , that what u should think about , i remember that i learned this idea from the legend ebrahim hegazy , a big kudos for him .</p>
+<p>the idea is using the header : <strong><code>X-HTTP-Method-Override</code></strong> .</p>
+<p>use the header , use the method , and what we get , just some random xml data about the server .</p>
+<p>asking againg ur ai agent frendo , he will tell u that u missed another header hhhh , this time a webdave header : <strong>Depth: 1</strong></p>
+<p>use all what we have , we can enumerate the path of the flag :</p>
+<p>the flag is at /vault/flag.txt</p>
+<p>being happy and try to get the flag , anothet forbiden hhhhhhhhh</p>
+<p>trying harder , and harder , qnd finaly find that ze can bypass that using another header : <code>X-Original-URL</code></p>
+<p>mixing all that steps , will give u the flag :</p>
+<p>final exploit : curl -H "X-Original-URL: /vault/flag.txt" http://ctf.nexus-security.club:3555/blablabla</p>
+<p>Flag: nexus{w3bd4v_wchw3y4_h3d34rs_ezzzzzzzzz}</p></article>
+  <div class="post-cta"><a class='btn ghost' href='https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges/tree/main/web_daveloper' target='_blank' rel='noopener'>Challenge source &rarr;</a><a class="btn ghost" href="../index.html#contact">Get in touch</a></div>
+  <div class="pn-row"><a class='pn' href='gofrita.html'><small>Previous</small><b>gofrita</b></a><a class='pn' href='money-laundering.html'><small>Next</small><b>Money laundering</b></a></div>
+</main>
+<footer class="foot"><div class="wrap"><span>&copy; 2026 Sila Yahia · 0xsila</span><span>Hunt responsibly.</span></div></footer>
+</body></html>
