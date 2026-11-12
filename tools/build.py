@@ -22,6 +22,19 @@ NEXTHUNT_REPO = "https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges"
 NEXTRACE_REPO = "https://github.com/0xsila/nexus-nextrace-2025-challenges"
 NEXZERO_REPO = "https://github.com/n3xusss/nexzero-26v"
 
+# Original line-icon per writeup (no photos/art - drawn here, 24x24, currentColor stroke),
+# picked by the writeup's first tag. One per card, like a thumbnail.
+ICONS = {
+    "idor": '<path d="M7 11V8a5 5 0 0 1 9.5-2.2M7 11h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2Z"/><circle cx="12" cy="15" r="1.6"/>',
+    "mass-assignment": '<path d="M9 4c-2 0-3 1-3 3v3c0 1-.5 2-2 2 1.5 0 2 1 2 2v3c0 2 1 3 3 3M15 4c2 0 3 1 3 3v3c0 1 .5 2 2 2-1.5 0-2 1-2 2v3c0 2-1 3-3 3"/>',
+    "response-manipulation": '<path d="M4 8h13M13 5l4 3-4 3M20 16H7M11 13l-4 3 4 3"/>',
+    "business-logic": '<path d="M7 12c0-2 1.5-3.5 3-3.5S12 10 12 12s1.5 3.5 3 3.5 3-1.5 3-3.5-1.5-3.5-3-3.5-3 1.5-3 3.5-1.5 3.5-3 3.5-3-1.5-3-3.5Z"/>',
+    "ssrf": '<rect x="4" y="4" width="16" height="5" rx="1"/><rect x="4" y="15" width="16" height="5" rx="1"/><circle cx="7.5" cy="6.5" r=".6" fill="currentColor" stroke="none"/><circle cx="7.5" cy="17.5" r=".6" fill="currentColor" stroke="none"/><path d="M9 9v2a3 3 0 0 0 3 3h1m0 0-1.6-1.6M13 14l-1.6 1.6"/>',
+    "webdav": '<path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z"/><circle cx="15" cy="15" r="2.2"/><path d="M15 12.3v.6M15 16.1v.6M17.7 15h-.6M13.5 15h-.6M16.9 13.1l-.4.4M13.9 16.1l-.4.4M16.9 16.9l-.4-.4M13.9 13.9l-.4-.4"/>',
+    "xss": '<path d="M8 7 3 12l5 5M16 7l5 5-5 5M13 5 11 19"/>',
+    "generic": '<path d="M4 5h16M4 10h10M4 15h16M4 20h10"/>',
+}
+
 WRITEUPS = [
     dict(kind="bounty", src="bounty/01-change-one-number-idor-series.md", slug="idor-series",
          title="Change One Number, Own Someone Else's Data",
@@ -132,7 +145,7 @@ def head(title, desc, rel):
 <div class="bg" aria-hidden="true"></div>
 <div class="wrap">
 <header class="top">
-<a class="brand" href="{rel}index.html"><span class="mono-mark">0x</span>sila</a>
+<a class="brand" href="{rel}index.html"><span class="blob" aria-hidden="true"></span>0xsila</a>
 <nav><a href="{rel}index.html#writeups">writeups</a><a href="{rel}index.html#certifications">certifications</a><a href="{rel}index.html#contact">contact</a></nav>
 </header>
 """
@@ -143,6 +156,11 @@ FOOT = '<footer class="foot"><span>Sila Yahia &middot; 0xsila</span><span><a hre
 
 def tag_pills(tags):
     return "".join(f'<span class="tag">{E(t)}</span>' for t in tags)
+
+
+def icon_svg(w, size=24):
+    svg = ICONS.get(w["tags"][0], ICONS["generic"])
+    return f'<svg viewBox="0 0 24 24" width="{size}" height="{size}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">{svg}</svg>'
 
 
 def post_page(w, body, prev_w, next_w):
@@ -159,6 +177,7 @@ def post_page(w, body, prev_w, next_w):
 
     return (head(f"{w['title']} - 0xsila", w["summary"], "../") +
             f'<article class="post">\n<p><a class="back" href="../index.html#writeups">&larr; writeups</a></p>\n'
+            f'<div class="post-icon">{icon_svg(w, 30)}</div>\n'
             f'<p class="kicker">{meta}</p>\n<h1>{E(w["title"])}</h1>\n<p class="lede">{E(w["summary"])}</p>\n'
             f'<p class="tags">{tag_pills(w["tags"])}</p>\n<div class="prose">{body}</div>\n{links}\n</article>\n'
             f'<div class="pn">{nav(prev_w, "previous")}{nav(next_w, "next")}</div>\n' + FOOT)
@@ -167,10 +186,12 @@ def post_page(w, body, prev_w, next_w):
 def writeup_row(w):
     info = "bug bounty" if w["kind"] == "bounty" else E(w["event"])
     return (f'<li class="post"><a href="writeups/{w["slug"]}.html">'
+            f'<span class="thumb">{icon_svg(w)}</span>'
+            f'<span class="post-body">'
             f'<span class="post-title">{E(w["title"])}</span>'
             f'<span class="post-sum">{E(w["summary"])}</span>'
             f'<span class="post-meta"><span class="mute">{info} &middot; {w["read"]} min read</span>{tag_pills(w["tags"])}</span>'
-            f'</a></li>')
+            f'</span></a></li>')
 
 
 def index_page():
