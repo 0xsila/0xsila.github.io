@@ -3,16 +3,21 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>philosofy - 0xsila</title>
 <meta name="description" content="A Host-header allow-list bypassed with wildcard DNS, chained into SSRF and an open redirect back to localhost.">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/css/style.css">
 </head><body><div class="wrap">
-<header class="top"><a href="../index.html"><b>0xsila</b></a>
-<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
-<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<header class="top">
+<a class="brand" href="../index.html"><span class="mono-mark">0x</span>sila</a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav>
+</header>
+<article class="post">
+<p><a class="back" href="../index.html#writeups">&larr; writeups</a></p>
+<p class="kicker">CTF writeup &middot; NEXZERO 2026 &middot; 4 min read</p>
 <h1>philosofy</h1>
-<p class="meta">CTF challenge writeup &middot; NEXZERO 2026 &middot; author: 0xsila</p>
-<article class="prose"><p><strong>Author</strong> : 0xsila</p>
+<p class="lede">A Host-header allow-list bypassed with wildcard DNS, chained into SSRF and an open redirect back to localhost.</p>
+<p class="tags"><span class="tag">ssrf</span><span class="tag">host-header</span><span class="tag">open-redirect</span></p>
+<div class="prose"><p><strong>Author</strong> : 0xsila</p>
 <h2>Challenge Name</h2>
 <p><strong>philosofy</strong></p>
 <h2>Vulnerability Chain</h2>
@@ -93,8 +98,9 @@ HTTPServer((&quot;0.0.0.0&quot;, 80), Handler).serve_forever()
 <li>Resolve the host and block requests to private/loopback ranges (<code>127.0.0.0/8</code>, <code>::1</code>, link-local, etc.) before <em>and after</em> following redirects, or disable automatic redirects entirely and re-validate every hop.</li>
 <li>Don't trust <code>remoteAddress</code> alone to gate an internal endpoint; an SSRF from the same host will always look local.</li>
 </ul>
-<p><strong>Lesson:</strong> when you see <code>.includes(trustedWord)</code> guarding what the server is allowed to fetch, ask what else can contain that word. A wildcard-DNS service that bakes an attacker-controlled IP into a hostname you pick (<code>nip.io</code>, <code>sslip.io</code>, and friends) is the standard way to pass that kind of check while still pointing exactly where you want.</p></article>
+<p><strong>Lesson:</strong> when you see <code>.includes(trustedWord)</code> guarding what the server is allowed to fetch, ask what else can contain that word. A wildcard-DNS service that bakes an attacker-controlled IP into a hostname you pick (<code>nip.io</code>, <code>sslip.io</code>, and friends) is the standard way to pass that kind of check while still pointing exactly where you want.</p></div>
 
-<p><a href="https://github.com/n3xusss/nexzero-26v/tree/main/web/philosofy">Challenge source on GitHub</a></p>
-<div class="pn"><a href="nextrace-2025.html">previous: NEXTRACE 2025: the six web challenges</a><a href="codemy.html">next: Codemy: stealing an admin session through chained cache poisoning</a></div>
-<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>
+<p><a href="https://github.com/n3xusss/nexzero-26v/tree/main/web/philosofy">Challenge source on GitHub &rarr;</a></p>
+</article>
+<div class="pn"><a class="pn-link" href="nextrace-2025.html"><span class="mute">previous</span><br>NEXTRACE 2025: the six web challenges</a><a class="pn-link" href="codemy.html"><span class="mute">next</span><br>Codemy: stealing an admin session through chained cache poisoning</a></div>
+<footer class="foot"><span>Sila Yahia &middot; 0xsila</span><span><a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></span></footer></div></body></html>

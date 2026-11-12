@@ -3,40 +3,45 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sila Yahia (0xsila) - Junior Penetration Tester</title>
 <meta name="description" content="Sila Yahia (0xsila): eJPT and CRTA certified junior penetration tester. Bug bounty and CTF writeups.">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/style.css">
 </head><body><div class="wrap">
-<header class="top"><a href="index.html"><b>0xsila</b></a>
-<nav><a href="index.html#writeups">writeups</a><a href="index.html#reports">reports</a><a href="index.html#certifications">certifications</a><a href="index.html#contact">contact</a></nav></header>
+<header class="top">
+<a class="brand" href="index.html"><span class="mono-mark">0x</span>sila</a>
+<nav><a href="index.html#writeups">writeups</a><a href="index.html#reports">reports</a><a href="index.html#certifications">certifications</a><a href="index.html#contact">contact</a></nav>
+</header>
 
+<section class="hero">
+<div class="avatar" aria-hidden="true">0x</div>
 <h1>Sila Yahia</h1>
-<p class="mute">0xsila &middot; junior penetration tester &middot; Lille, France</p>
-<p>I am a third-year Computer Science student at Université de Lille, certified eJPT and CRTA. I test web applications and APIs, report what I find on HackerOne, and write down how I found it. This page is where I share it.</p>
-<p>I am looking for a 3-month internship from April 2027 in cybersecurity, networks or systems.</p>
-<ul class="links">
-<li><a href="assets/CV_Sila_Yahia_EN.pdf">CV (EN)</a></li><li><a href="assets/CV_Sila_Yahia_FR.pdf">CV (FR)</a></li>
-<li><a href="https://hackerone.com/0xsila">HackerOne</a></li><li><a href="https://www.linkedin.com/in/0xsila">LinkedIn</a></li>
-<li><a href="https://github.com/0xsila">GitHub</a></li><li><a href="https://tryhackme.com/p/0xsila">TryHackMe</a></li>
-</ul>
+<p class="role">0xsila &middot; junior penetration tester &middot; Lille, France</p>
+<p>Third-year Computer Science student at Université de Lille, certified <b>eJPT</b> and <b>CRTA</b>. I test web applications and APIs, report what I find on HackerOne, and write down how I found it. This page is where I share it.</p>
+<p class="mute">Looking for a 3-month internship from April 2027 in cybersecurity, networks or systems.</p>
+<p class="links">
+<a href="assets/CV_Sila_Yahia_EN.pdf">CV (EN)</a><a href="assets/CV_Sila_Yahia_FR.pdf">CV (FR)</a>
+<a href="https://hackerone.com/0xsila">HackerOne</a><a href="https://www.linkedin.com/in/0xsila">LinkedIn</a>
+<a href="https://github.com/0xsila">GitHub</a><a href="https://tryhackme.com/p/0xsila">TryHackMe</a>
+</p>
+</section>
 
 <h2 id="writeups">Writeups</h2>
 <h3>Bug bounty</h3>
-<ul class="rows">
-<li><a href="writeups/idor-series.html"><span class="t">Change One Number, Own Someone Else&#x27;s Data</span></a><span class="r">3 bounties &middot; 9 VDP resolved</span><span class="d">Four IDORs in one private program: profile edits, plans, comments and the empty hubId trick.</span></li>
-<li><a href="writeups/mass-assignment.html"><span class="t">One JSON Field, One Invisible Project Owner</span></a><span class="r">2 bounties &middot; 1 VDP resolved</span><span class="d">Mass assignment: forging the owner of a project and the timestamps of comments and wiki pages.</span></li>
-<li><a href="writeups/response-manipulation.html"><span class="t">The Server Said No. I Said Yes.</span></a><span class="r">2 bounties &middot; 0 VDP resolved</span><span class="d">Four response manipulation bugs: protected share links, locked features and OTP bypasses.</span></li>
-<li><a href="writeups/business-logic.html"><span class="t">The Free Trial That Never Ended</span></a><span class="r">3 bounties &middot; 3 VDP resolved</span><span class="d">Business logic bugs: endless trials, plan toggles, member caps and many workspaces on one account.</span></li>
+<ul class="posts">
+<li class="post"><a href="writeups/idor-series.html"><span class="post-title">Change One Number, Own Someone Else&#x27;s Data</span><span class="post-sum">Four IDORs in one private program: profile edits, plans, comments and the empty hubId trick.</span><span class="post-meta"><span class="mute">3 bounties &middot; 9 VDP resolved &middot; 5 min</span><span class="tag">idor</span><span class="tag">access-control</span><span class="tag">hackerone</span></span></a></li>
+<li class="post"><a href="writeups/mass-assignment.html"><span class="post-title">One JSON Field, One Invisible Project Owner</span><span class="post-sum">Mass assignment: forging the owner of a project and the timestamps of comments and wiki pages.</span><span class="post-meta"><span class="mute">2 bounties &middot; 1 VDP resolved &middot; 5 min</span><span class="tag">mass-assignment</span><span class="tag">api</span><span class="tag">hackerone</span></span></a></li>
+<li class="post"><a href="writeups/response-manipulation.html"><span class="post-title">The Server Said No. I Said Yes.</span><span class="post-sum">Four response manipulation bugs: protected share links, locked features and OTP bypasses.</span><span class="post-meta"><span class="mute">2 bounties &middot; 0 VDP resolved &middot; 4 min</span><span class="tag">response-manipulation</span><span class="tag">otp-bypass</span><span class="tag">hackerone</span></span></a></li>
+<li class="post"><a href="writeups/business-logic.html"><span class="post-title">The Free Trial That Never Ended</span><span class="post-sum">Business logic bugs: endless trials, plan toggles, member caps and many workspaces on one account.</span><span class="post-meta"><span class="mute">3 bounties &middot; 3 VDP resolved &middot; 5 min</span><span class="tag">business-logic</span><span class="tag">billing</span><span class="tag">hackerone</span></span></a></li>
 </ul>
 <h3>CTF challenges I wrote</h3>
-<ul class="rows">
-<li><a href="writeups/1xbet.html"><span class="t">1xbet</span></a><span class="r">NEXTHUNT 2025</span><span class="d">Mass assignment, content-type confusion and a frontend that trusts status codes.</span></li>
-<li><a href="writeups/dz-kitab.html"><span class="t">Dz-Kitab</span></a><span class="r">NEXTHUNT 2025</span><span class="d">IDOR protected by a naive check, broken with FAT GET and HTTP parameter pollution.</span></li>
-<li><a href="writeups/gofrita.html"><span class="t">gofrita</span></a><span class="r">NEXTHUNT 2025</span><span class="d">Iframe injection to SSRF over gopher, then an X-Original-URL bypass.</span></li>
-<li><a href="writeups/web-daveloper.html"><span class="t">web daveloper</span></a><span class="r">NEXTHUNT 2025</span><span class="d">WebDAV: method override, PROPFIND enumeration and a header bypass.</span></li>
-<li><a href="writeups/nextrace-2025.html"><span class="t">NEXTRACE 2025: the six web challenges</span></a><span class="r">NEXTRACE 2025</span><span class="d">DevTools, response manipulation, headers, HPP and a web cache PURGE bypass.</span></li>
-<li><a href="writeups/philosofy.html"><span class="t">philosofy</span></a><span class="r">NEXZERO 2026</span><span class="d">A Host-header allow-list bypassed with wildcard DNS, chained into SSRF and an open redirect back to localhost.</span></li>
-<li><a href="writeups/codemy.html"><span class="t">Codemy: stealing an admin session through chained cache poisoning</span></a><span class="r">ICT CTF 2026</span><span class="d">Self-XSS, a cache/origin path-parsing mismatch and a WAF race condition chained to steal an admin session.</span></li>
+<ul class="posts">
+<li class="post"><a href="writeups/1xbet.html"><span class="post-title">1xbet</span><span class="post-sum">Mass assignment, content-type confusion and a frontend that trusts status codes.</span><span class="post-meta"><span class="mute">NEXTHUNT 2025 &middot; 2 min</span><span class="tag">mass-assignment</span><span class="tag">response-manipulation</span></span></a></li>
+<li class="post"><a href="writeups/dz-kitab.html"><span class="post-title">Dz-Kitab</span><span class="post-sum">IDOR protected by a naive check, broken with FAT GET and HTTP parameter pollution.</span><span class="post-meta"><span class="mute">NEXTHUNT 2025 &middot; 2 min</span><span class="tag">idor</span><span class="tag">hpp</span><span class="tag">fat-get</span></span></a></li>
+<li class="post"><a href="writeups/gofrita.html"><span class="post-title">gofrita</span><span class="post-sum">Iframe injection to SSRF over gopher, then an X-Original-URL bypass.</span><span class="post-meta"><span class="mute">NEXTHUNT 2025 &middot; 3 min</span><span class="tag">ssrf</span><span class="tag">gopher</span><span class="tag">impact-escalation</span></span></a></li>
+<li class="post"><a href="writeups/web-daveloper.html"><span class="post-title">web daveloper</span><span class="post-sum">WebDAV: method override, PROPFIND enumeration and a header bypass.</span><span class="post-meta"><span class="mute">NEXTHUNT 2025 &middot; 2 min</span><span class="tag">webdav</span><span class="tag">method-override</span></span></a></li>
+<li class="post"><a href="writeups/nextrace-2025.html"><span class="post-title">NEXTRACE 2025: the six web challenges</span><span class="post-sum">DevTools, response manipulation, headers, HPP and a web cache PURGE bypass.</span><span class="post-meta"><span class="mute">NEXTRACE 2025 &middot; 3 min</span><span class="tag">response-manipulation</span><span class="tag">hpp</span><span class="tag">web-cache</span></span></a></li>
+<li class="post"><a href="writeups/philosofy.html"><span class="post-title">philosofy</span><span class="post-sum">A Host-header allow-list bypassed with wildcard DNS, chained into SSRF and an open redirect back to localhost.</span><span class="post-meta"><span class="mute">NEXZERO 2026 &middot; 4 min</span><span class="tag">ssrf</span><span class="tag">host-header</span><span class="tag">open-redirect</span></span></a></li>
+<li class="post"><a href="writeups/codemy.html"><span class="post-title">Codemy: stealing an admin session through chained cache poisoning</span><span class="post-sum">Self-XSS, a cache/origin path-parsing mismatch and a WAF race condition chained to steal an admin session.</span><span class="post-meta"><span class="mute">ICT CTF 2026 &middot; 7 min</span><span class="tag">xss</span><span class="tag">cache-poisoning</span><span class="tag">race-condition</span></span></a></li>
 </ul>
 
 <h2 id="reports">HackerOne reports</h2>
@@ -99,4 +104,4 @@
 
 <h2 id="contact">Contact</h2>
 <p><a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a> &middot; <a href="https://www.linkedin.com/in/0xsila">linkedin.com/in/0xsila</a> &middot; <a href="https://hackerone.com/0xsila">hackerone.com/0xsila</a></p>
-<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>
+<footer class="foot"><span>Sila Yahia &middot; 0xsila</span><span><a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></span></footer></div></body></html>

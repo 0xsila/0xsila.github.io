@@ -3,16 +3,21 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Codemy: stealing an admin session through chained cache poisoning - 0xsila</title>
 <meta name="description" content="Self-XSS, a cache/origin path-parsing mismatch and a WAF race condition chained to steal an admin session.">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/css/style.css">
 </head><body><div class="wrap">
-<header class="top"><a href="../index.html"><b>0xsila</b></a>
-<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
-<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<header class="top">
+<a class="brand" href="../index.html"><span class="mono-mark">0x</span>sila</a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav>
+</header>
+<article class="post">
+<p><a class="back" href="../index.html#writeups">&larr; writeups</a></p>
+<p class="kicker">CTF writeup &middot; ICT CTF 2026 &middot; 7 min read</p>
 <h1>Codemy: stealing an admin session through chained cache poisoning</h1>
-<p class="meta">CTF challenge writeup &middot; ICT CTF 2026 &middot; author: 0xsila</p>
-<article class="prose"><p><strong>Author</strong> : 0xsila</p>
+<p class="lede">Self-XSS, a cache/origin path-parsing mismatch and a WAF race condition chained to steal an admin session.</p>
+<p class="tags"><span class="tag">xss</span><span class="tag">cache-poisoning</span><span class="tag">race-condition</span></p>
+<div class="prose"><p><strong>Author</strong> : 0xsila</p>
 <h2>Summary</h2>
 <p>Codemy is a small course platform. A support feature lets any signed-in<br />
 or anonymous visitor report a broken page to staff; a staff member (in<br />
@@ -200,8 +205,9 @@ re-run without doing each step by hand.</p>
 </tr>
 </tbody>
 </table>
-<p>Any one of these fixes independently breaks the whole chain.</p></article>
+<p>Any one of these fixes independently breaks the whole chain.</p></div>
 
 
-<div class="pn"><a href="philosofy.html">previous: philosofy</a><span></span></div>
-<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>
+</article>
+<div class="pn"><a class="pn-link" href="philosofy.html"><span class="mute">previous</span><br>philosofy</a><span></span></div>
+<footer class="foot"><span>Sila Yahia &middot; 0xsila</span><span><a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></span></footer></div></body></html>

@@ -30,39 +30,44 @@ VDP_POINTS = 7  # reputation points for a resolved VDP report
 WRITEUPS = [
     dict(kind="bounty", src="bounty/01-change-one-number-idor-series.md", slug="idor-series",
          title="Change One Number, Own Someone Else's Data",
-         summary="Four IDORs in one private program: profile edits, plans, comments and the empty hubId trick."),
+         summary="Four IDORs in one private program: profile edits, plans, comments and the empty hubId trick.",
+         tags=["idor", "access-control", "hackerone"]),
     dict(kind="bounty", src="bounty/02-one-json-field-invisible-owner-mass-assignment.md", slug="mass-assignment",
          title="One JSON Field, One Invisible Project Owner",
-         summary="Mass assignment: forging the owner of a project and the timestamps of comments and wiki pages."),
+         summary="Mass assignment: forging the owner of a project and the timestamps of comments and wiki pages.",
+         tags=["mass-assignment", "api", "hackerone"]),
     dict(kind="bounty", src="bounty/03-server-said-no-i-said-yes-response-manipulation.md", slug="response-manipulation",
          title="The Server Said No. I Said Yes.",
-         summary="Four response manipulation bugs: protected share links, locked features and OTP bypasses."),
+         summary="Four response manipulation bugs: protected share links, locked features and OTP bypasses.",
+         tags=["response-manipulation", "otp-bypass", "hackerone"]),
     dict(kind="bounty", src="bounty/04-free-trial-that-never-ended-business-logic.md", slug="business-logic",
          title="The Free Trial That Never Ended",
-         summary="Business logic bugs: endless trials, plan toggles, member caps and many workspaces on one account."),
+         summary="Business logic bugs: endless trials, plan toggles, member caps and many workspaces on one account.",
+         tags=["business-logic", "billing", "hackerone"]),
     dict(kind="ctf", event="NEXTHUNT 2025", src="nexthunt/1xbet.md", slug="1xbet", title="1xbet",
          summary="Mass assignment, content-type confusion and a frontend that trusts status codes.",
-         repo=NEXTHUNT_REPO + "/tree/main/1xbet"),
+         repo=NEXTHUNT_REPO + "/tree/main/1xbet", tags=["mass-assignment", "response-manipulation"]),
     dict(kind="ctf", event="NEXTHUNT 2025", src="nexthunt/dz-kitab.md", slug="dz-kitab", title="Dz-Kitab",
          summary="IDOR protected by a naive check, broken with FAT GET and HTTP parameter pollution.",
-         repo=NEXTHUNT_REPO + "/tree/main/Dz-Kitab"),
+         repo=NEXTHUNT_REPO + "/tree/main/Dz-Kitab", tags=["idor", "hpp", "fat-get"]),
     dict(kind="ctf", event="NEXTHUNT 2025", src="nexthunt/gofrita.md", slug="gofrita", title="gofrita",
          summary="Iframe injection to SSRF over gopher, then an X-Original-URL bypass.",
-         repo=NEXTHUNT_REPO + "/tree/main/gofrita"),
+         repo=NEXTHUNT_REPO + "/tree/main/gofrita", tags=["ssrf", "gopher", "impact-escalation"]),
     dict(kind="ctf", event="NEXTHUNT 2025", src="nexthunt/web-daveloper.md", slug="web-daveloper", title="web daveloper",
          summary="WebDAV: method override, PROPFIND enumeration and a header bypass.",
-         repo=NEXTHUNT_REPO + "/tree/main/web_daveloper"),
+         repo=NEXTHUNT_REPO + "/tree/main/web_daveloper", tags=["webdav", "method-override"]),
     dict(kind="ctf", event="NEXTRACE 2025", src="nextrace/nextrace-2025.md", slug="nextrace-2025",
          title="NEXTRACE 2025: the six web challenges",
          summary="DevTools, response manipulation, headers, HPP and a web cache PURGE bypass.",
-         repo=NEXTRACE_REPO),
+         repo=NEXTRACE_REPO, tags=["response-manipulation", "hpp", "web-cache"]),
     dict(kind="ctf", event="NEXZERO 2026", src="nexzero/philosofy.md", slug="philosofy",
          title="philosofy",
          summary="A Host-header allow-list bypassed with wildcard DNS, chained into SSRF and an open redirect back to localhost.",
-         repo=NEXZERO_REPO + "/tree/main/web/philosofy"),
+         repo=NEXZERO_REPO + "/tree/main/web/philosofy", tags=["ssrf", "host-header", "open-redirect"]),
     dict(kind="ctf", event="ICT CTF 2026", src="ict2026/codemy.md", slug="codemy",
          title="Codemy: stealing an admin session through chained cache poisoning",
-         summary="Self-XSS, a cache/origin path-parsing mismatch and a WAF race condition chained to steal an admin session."),
+         summary="Self-XSS, a cache/origin path-parsing mismatch and a WAF race condition chained to steal an admin session.",
+         tags=["xss", "cache-poisoning", "race-condition"]),
 ]
 
 DATA = json.loads((ROOT / "data" / "reports.json").read_text(encoding="utf-8"))
@@ -204,46 +209,57 @@ def head(title, desc, rel):
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{E(title)}</title>
 <meta name="description" content="{E(desc)}">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark light">
 <link rel="icon" href="{rel}assets/img/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="{rel}assets/css/style.css">
 </head><body><div class="wrap">
-<header class="top"><a href="{rel}index.html"><b>0xsila</b></a>
-<nav><a href="{rel}index.html#writeups">writeups</a><a href="{rel}index.html#reports">reports</a><a href="{rel}index.html#certifications">certifications</a><a href="{rel}index.html#contact">contact</a></nav></header>
+<header class="top">
+<a class="brand" href="{rel}index.html"><span class="mono-mark">0x</span>sila</a>
+<nav><a href="{rel}index.html#writeups">writeups</a><a href="{rel}index.html#reports">reports</a><a href="{rel}index.html#certifications">certifications</a><a href="{rel}index.html#contact">contact</a></nav>
+</header>
 """
 
 
-FOOT = '<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>\n'
+FOOT = '<footer class="foot"><span>Sila Yahia &middot; 0xsila</span><span><a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></span></footer></div></body></html>\n'
+
+
+def tag_pills(tags):
+    return "".join(f'<span class="tag">{E(t)}</span>' for t in tags)
 
 
 def post_page(w, body, prev_w, next_w):
     if w["kind"] == "bounty":
         t = writeup_totals(w["slug"])
-        meta = f"bug bounty &middot; HackerOne private program &middot; {t['reports']} reports"
-        links = '<p><a href="https://hackerone.com/0xsila">HackerOne profile</a></p>'
+        kicker = "bug bounty &middot; HackerOne private program"
+        links = '<p><a href="https://hackerone.com/0xsila">HackerOne profile &rarr;</a></p>'
     else:
-        meta = f"CTF challenge writeup &middot; {E(w['event'])} &middot; author: 0xsila"
-        links = f'<p><a href="{w["repo"]}">Challenge source on GitHub</a></p>' if w.get("repo") else ""
+        kicker = f"CTF writeup &middot; {E(w['event'])}"
+        links = f'<p><a href="{w["repo"]}">Challenge source on GitHub &rarr;</a></p>' if w.get("repo") else ""
+    meta = f"{kicker} &middot; {w['read']} min read"
 
     def nav(x, label):
-        return f'<a href="{x["slug"]}.html">{label}: {E(x["title"])}</a>' if x else "<span></span>"
+        return f'<a class="pn-link" href="{x["slug"]}.html"><span class="mute">{label}</span><br>{E(x["title"])}</a>' if x else "<span></span>"
 
     return (head(f"{w['title']} - 0xsila", w["summary"], "../") +
-            f'<p><a href="../index.html#writeups">&larr; writeups</a></p>\n<h1>{E(w["title"])}</h1>\n'
-            f'<p class="meta">{meta}</p>\n<article class="prose">{body}</article>\n{reports_block(w["slug"])}\n{links}\n'
+            f'<article class="post">\n<p><a class="back" href="../index.html#writeups">&larr; writeups</a></p>\n'
+            f'<p class="kicker">{meta}</p>\n<h1>{E(w["title"])}</h1>\n<p class="lede">{E(w["summary"])}</p>\n'
+            f'<p class="tags">{tag_pills(w["tags"])}</p>\n<div class="prose">{body}</div>\n{reports_block(w["slug"])}\n{links}\n</article>\n'
             f'<div class="pn">{nav(prev_w, "previous")}{nav(next_w, "next")}</div>\n' + FOOT)
 
 
 def writeup_row(w):
     if w["kind"] == "bounty":
         t = writeup_totals(w["slug"])
-        right = f"{t['bounties']} bounties &middot; {t['vdp']} VDP resolved"
+        info = f"{t['bounties']} bounties &middot; {t['vdp']} VDP resolved"
         if t["total"] is not None:
-            right = f"{money(t['total'])} &middot; " + right
+            info = f"{money(t['total'])} &middot; " + info
     else:
-        right = E(w["event"])
-    return (f'<li><a href="writeups/{w["slug"]}.html"><span class="t">{E(w["title"])}</span></a>'
-            f'<span class="r">{right}</span><span class="d">{E(w["summary"])}</span></li>')
+        info = E(w["event"])
+    return (f'<li class="post"><a href="writeups/{w["slug"]}.html">'
+            f'<span class="post-title">{E(w["title"])}</span>'
+            f'<span class="post-sum">{E(w["summary"])}</span>'
+            f'<span class="post-meta"><span class="mute">{info} &middot; {w["read"]} min</span>{tag_pills(w["tags"])}</span>'
+            f'</a></li>')
 
 
 def month_hist():
@@ -280,23 +296,26 @@ def index_page():
     sev = s["severity"]
     return head("Sila Yahia (0xsila) - Junior Penetration Tester",
                 "Sila Yahia (0xsila): eJPT and CRTA certified junior penetration tester. Bug bounty and CTF writeups.", "") + f"""
+<section class="hero">
+<div class="avatar" aria-hidden="true">0x</div>
 <h1>Sila Yahia</h1>
-<p class="mute">0xsila &middot; junior penetration tester &middot; Lille, France</p>
-<p>I am a third-year Computer Science student at Université de Lille, certified eJPT and CRTA. I test web applications and APIs, report what I find on HackerOne, and write down how I found it. This page is where I share it.</p>
-<p>I am looking for a 3-month internship from April 2027 in cybersecurity, networks or systems.</p>
-<ul class="links">
-<li><a href="assets/CV_Sila_Yahia_EN.pdf">CV (EN)</a></li><li><a href="assets/CV_Sila_Yahia_FR.pdf">CV (FR)</a></li>
-<li><a href="https://hackerone.com/0xsila">HackerOne</a></li><li><a href="https://www.linkedin.com/in/0xsila">LinkedIn</a></li>
-<li><a href="https://github.com/0xsila">GitHub</a></li><li><a href="https://tryhackme.com/p/0xsila">TryHackMe</a></li>
-</ul>
+<p class="role">0xsila &middot; junior penetration tester &middot; Lille, France</p>
+<p>Third-year Computer Science student at Université de Lille, certified <b>eJPT</b> and <b>CRTA</b>. I test web applications and APIs, report what I find on HackerOne, and write down how I found it. This page is where I share it.</p>
+<p class="mute">Looking for a 3-month internship from April 2027 in cybersecurity, networks or systems.</p>
+<p class="links">
+<a href="assets/CV_Sila_Yahia_EN.pdf">CV (EN)</a><a href="assets/CV_Sila_Yahia_FR.pdf">CV (FR)</a>
+<a href="https://hackerone.com/0xsila">HackerOne</a><a href="https://www.linkedin.com/in/0xsila">LinkedIn</a>
+<a href="https://github.com/0xsila">GitHub</a><a href="https://tryhackme.com/p/0xsila">TryHackMe</a>
+</p>
+</section>
 
 <h2 id="writeups">Writeups</h2>
 <h3>Bug bounty</h3>
-<ul class="rows">
+<ul class="posts">
 {bounty_rows}
 </ul>
 <h3>CTF challenges I wrote</h3>
-<ul class="rows">
+<ul class="posts">
 {ctf_rows}
 </ul>
 
@@ -358,6 +377,7 @@ def main():
     for i, w in enumerate(WRITEUPS):
         mdp = SRC / w["src"]
         text = clean_markdown(mdp.read_text(encoding="utf-8"), w["slug"])
+        w["read"] = max(1, round(len(text.split()) / 200))
         for img in re.findall(r"\(\.\./assets/writeups/[^/]+/([^)]+)\)", text):
             dst = ROOT / "assets" / "writeups" / w["slug"]
             dst.mkdir(parents=True, exist_ok=True)
