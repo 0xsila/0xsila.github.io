@@ -60,6 +60,9 @@ WRITEUPS = [
          title="philosofy",
          summary="A Host-header allow-list bypassed with wildcard DNS, chained into SSRF and an open redirect back to localhost.",
          repo=NEXZERO_REPO + "/tree/main/web/philosofy"),
+    dict(kind="ctf", event="ICT CTF 2026", src="ict2026/codemy.md", slug="codemy",
+         title="Codemy: stealing an admin session through chained cache poisoning",
+         summary="Self-XSS, a cache/origin path-parsing mismatch and a WAF race condition chained to steal an admin session."),
 ]
 
 DATA = json.loads((ROOT / "data" / "reports.json").read_text(encoding="utf-8"))
@@ -220,7 +223,7 @@ def post_page(w, body, prev_w, next_w):
         links = '<p><a href="https://hackerone.com/0xsila">HackerOne profile</a></p>'
     else:
         meta = f"CTF challenge writeup &middot; {E(w['event'])} &middot; author: 0xsila"
-        links = f'<p><a href="{w["repo"]}">Challenge source on GitHub</a></p>'
+        links = f'<p><a href="{w["repo"]}">Challenge source on GitHub</a></p>' if w.get("repo") else ""
 
     def nav(x, label):
         return f'<a href="{x["slug"]}.html">{label}: {E(x["title"])}</a>' if x else "<span></span>"

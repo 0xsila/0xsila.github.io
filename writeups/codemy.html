@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Codemy: stealing an admin session through chained cache poisoning - 0xsila</title>
+<meta name="description" content="Self-XSS, a cache/origin path-parsing mismatch and a WAF race condition chained to steal an admin session.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/css/style.css">
+</head><body><div class="wrap">
+<header class="top"><a href="../index.html"><b>0xsila</b></a>
+<nav><a href="../index.html#writeups">writeups</a><a href="../index.html#reports">reports</a><a href="../index.html#certifications">certifications</a><a href="../index.html#contact">contact</a></nav></header>
+<p><a href="../index.html#writeups">&larr; writeups</a></p>
+<h1>Codemy: stealing an admin session through chained cache poisoning</h1>
+<p class="meta">CTF challenge writeup &middot; ICT CTF 2026 &middot; author: 0xsila</p>
+<article class="prose"><p><strong>Author</strong> : 0xsila</p>
+<h2>Summary</h2>
+<p>Codemy is a small course platform. A support feature lets any signed-in<br />
+or anonymous visitor report a broken page to staff; a staff member (in<br />
+this build, an automated bot standing in for one) opens whatever link is<br />
+reported. Chaining three independent, individually low-impact issues lets<br />
+an unauthenticated attacker steal that staff member's session and recover<br />
+the flag:</p>
+<ol>
+<li>A reflected injection point that, on its own, only ever fires against<br />
+   the person who constructs the malicious URL themselves ("self-XSS").</li>
+<li>A path-parsing disagreement between the caching layer in front of the<br />
+   app and the app itself, which lets that injection be stored under the<br />
+   URL of a completely unrelated, otherwise-safe page.</li>
+<li>A race condition in a request validator sitting in front of the cache,<br />
+   which is meant to block exactly this kind of payload but can be<br />
+   bypassed by sending two requests at once.</li>
+</ol>
+<p>None of these three is exploitable alone. Together, they let an attacker<br />
+plant persistent script on a link a real user would never think twice<br />
+about clicking, and have that script fire in an authenticated staff<br />
+member's browser.</p>
+<h2>Architecture</h2>
+<pre><code> attacker/victim
+        |
+        v
+  proxy (:47002)  &lt;-- caches responses, has a request validator (&quot;WAF&quot;)
+        |
+        v
+  origin (:47001) &lt;-- the actual app: accounts, certificates, report queue
+</code></pre>
+<p>The proxy is a reverse cache sitting in front of the app. It exists to<br />
+avoid re-rendering certificate pages on every request. The origin is the<br />
+actual Express application.</p>
+<h2>Stage 1 - the injection point</h2>
+<p>Codemy has a small personalization feature: <code>/preferences?nickname=...</code><br />
+sets a <code>nickname</code> cookie. It's echoed back as a "Welcome back, ..."<br />
+greeting - including on the site's generic browse/landing fallback (any<br />
+path that doesn't match a defined route), which reflects it with no<br />
+escaping:</p>
+<pre><code class="language-js">app.use((req, res) =&gt; {
+  res.status(200);
+  const nickname = req.cookies.nickname;
+  res.send(`... ${nickname ? `&lt;p&gt;Welcome back, ${nickname}.&lt;/p&gt;` : ''} ...`);
+});
+</code></pre>
+<p>Set your own <code>nickname</code> cookie to <code>&lt;img src=x onerror=alert(1)&gt;</code> via<br />
+<code>/preferences?nickname=...</code> and any page that falls through to this<br />
+handler pops the alert. On its own this is barely interesting: <strong>a URL<br />
+cannot set someone else's cookies</strong>, so there's no way to deliver this to<br />
+another person by just sending them a link - whoever clicks it sees<br />
+their own (empty) <code>nickname</code> state, not yours. This is what makes it<br />
+"self," and it's why anchoring the payload in cookie state (rather than<br />
+the URL) matters: a version of this bug reflecting something present in<br />
+the URL itself would let an attacker just report a link with the payload<br />
+baked in directly, skipping the rest of the chain entirely.</p>
+<h2>Stage 2 - turning it persistent (CSPT / cache-key confusion)</h2>
+<p>The proxy caches certificate pages by looking only at the first two raw<br />
+path segments (<code>/certificate/&lt;id&gt;</code>) and ignoring everything after -<br />
+a realistic canonicalization rule (real CDNs commonly key on a URL prefix<br />
+this way, to avoid cache fragmentation from tracking params or trailing<br />
+junk). It does <strong>not</strong> resolve dot-segments itself:</p>
+<pre><code class="language-js">const segments = rawPathname.split('/').filter(Boolean);
+const cacheable = segments[0] === 'certificate' &amp;&amp; /^\d+$/.test(segments[1]);
+const cacheKey = `/certificate/${segments[1]}`;
+</code></pre>
+<p>The origin, on the other hand, <em>does</em> resolve dot-segments before<br />
+routing (a normalization middleware, matching how many real backends or<br />
+reverse proxies in front of an app behave). So the raw request</p>
+<pre><code>GET /certificate/1/../../badges HTTP/1.1
+Cookie: nickname=&lt;img src=x onerror=&quot;...&quot;&gt;
+</code></pre>
+<p>is interpreted completely differently by each layer:</p>
+<ul>
+<li>The <strong>proxy</strong> looks at the first two raw segments - <code>certificate</code>,<br />
+<code>1</code> - decides it's cacheable, and uses <code>/certificate/1</code> as the key.</li>
+<li>The <strong>origin</strong> resolves the dot-segments itself: <code>1/../../badges</code><br />
+  cancels back to just <code>/badges</code>, and routes to the real badges page,<br />
+  which reflects the attacker's <code>nickname</code> cookie.</li>
+</ul>
+<p>The proxy caches <em>that</em> (badges) response under the key <code>/certificate/1</code>.<br />
+From then on, anyone requesting the plain, ordinary <code>/certificate/1</code> -<br />
+the actual certificate page - gets served the badges page's poisoned<br />
+content instead.</p>
+<h2>Stage 3 - getting the payload past the WAF (race condition)</h2>
+<p>A validator sits in front of the cache and blocks anything matching a<br />
+broad signature list covering common injection tags, event handlers,<br />
+and known exfiltration primitives (<code>fetch(</code>, <code>document.cookie</code>,<br />
+<code>XMLHttpRequest</code>, <code>sendBeacon</code>, <code>new Image(</code>, etc.), plus directory<br />
+traversal and a few other injection classes for good measure. This is<br />
+deliberately broad - checking only a handful of specific tags (<code>&lt;img</code>,<br />
+<code>&lt;script</code>) would let an attacker trivially swap to an untested<br />
+tag/handler combination (<code>&lt;body onload=...&gt;</code>) and skip the race<br />
+entirely. Sent alone, the crafted request from Stage 2 gets a <code>400</code><br />
+regardless of which tag or exfil method is used.</p>
+<p>The validator's bug is unrelated to the blocklist's contents - it's in<br />
+how the check is implemented:</p>
+<pre><code class="language-js">let sharedValidationTarget = null; // shared across ALL requests
+
+async function isBlockedByWaf(rawUrl, decodedPath, cookieHeader) {
+  const combined = `${rawUrl} ${decodedPath} ${cookieHeader || ''}`;
+  sharedValidationTarget = combined;      // (1) stash
+  await sleep(150);                        // (2) simulated slow lookup
+  const target = sharedValidationTarget;  // (3) read back
+  return matchesBlocklist(target);
+}
+</code></pre>
+<p>The content being checked is held in a single variable shared by every<br />
+in-flight request instead of a value scoped to that request. If a second,<br />
+benign request arrives while the first is still "asleep" in step (2), it<br />
+overwrites the shared variable. When the first request wakes up and reads<br />
+it back in step (3), it reads the second request's clean content - and<br />
+gets validated against something it never sent. This is independent of<br />
+how strict or broad the blocklist itself is - broadening the blocklist<br />
+closes bypasses that don't need the race, but does nothing to fix the<br />
+race itself, since the bug is in the check's plumbing, not its rules.</p>
+<p>Firing the malicious request and a benign one (e.g. <code>/certificate/2</code>)<br />
+concurrently, with the malicious one issued first, wins the race: the<br />
+malicious request's own check ends up reading the benign request's clean<br />
+content and passes.</p>
+<h2>Stage 4 - handing it to the admin</h2>
+<p>Codemy has a "report a problem" form (<code>POST /report</code>) that queues a URL<br />
+for staff review. An admin bot polls this queue, logs in as admin<br />
+(establishing a real, non-<code>httpOnly</code> session cookie), then navigates to<br />
+whatever was reported. Since <code>/certificate/1</code> is now poisoned, the bot's<br />
+browser renders the injected <code>&lt;img onerror=...&gt;</code>, which fires inside the<br />
+bot's own authenticated session and exfiltrates <code>document.cookie</code> to the<br />
+attacker's collector.</p>
+<p>In this build the admin's session cookie value <strong>is</strong> the flag, so<br />
+capturing it is equivalent to solving the challenge; in a real<br />
+application it would be a session token usable to directly hijack the<br />
+admin account.</p>
+<h2>Full exploit sequence</h2>
+<pre><code class="language-bash"># 0. sanity: solo malicious request is blocked
+node race.js --solo            # -&gt; 400
+
+# 1. win the race, land the poisoned response in the cache
+node race.js                   # retries until the WAF is bypassed
+
+# 2. confirm the clean-looking URL now serves the payload
+node attack.js --check         # -&gt; x-cache: HIT, payload in body
+
+# 3. report the poisoned (but ordinary-looking) URL to staff
+node report.js &quot;http://localhost:47002/certificate/1&quot;
+
+# 4. the bot (running separately, see README) visits it, executes the
+#    payload, and the collector logs the stolen session/flag
+</code></pre>
+<h3>Automation</h3>
+<p><code>solve.py</code> drives the four steps above in order, as a single command:</p>
+<pre><code class="language-bash">python3 solve.py [--target-url http://localhost:47002/certificate/1]
+</code></pre>
+<p>It just shells out to <code>node race.js --solo</code>, <code>node race.js</code>,<br />
+<code>node attack.js --check</code> and <code>node report.js &lt;url&gt;</code> in sequence and stops<br />
+on the first failure, so the whole chain above can be kicked off and<br />
+re-run without doing each step by hand.</p>
+<h2>Root causes and fixes</h2>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Root cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>User input reflected without HTML-encoding</td>
+<td>Encode all reflected output; never build HTML by string interpolation</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Cache computes its key from a different, more-normalized view of the path than the origin uses for routing</td>
+<td>Cache and origin must agree on one canonical parsing of the path - ideally the cache rewrites the request line it forwards, not just its own bookkeeping key</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Request-scoped state stored in a variable shared across concurrent requests</td>
+<td>Never hold per-request data in module/global scope across an <code>await</code>; use a local variable or something explicitly keyed per-request</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Session cookie not <code>httpOnly</code></td>
+<td>Set <code>httpOnly</code> on any cookie that doesn't need JS access - this alone would have stopped the exfiltration even with the XSS intact</td>
+</tr>
+</tbody>
+</table>
+<p>Any one of these fixes independently breaks the whole chain.</p></article>
+
+
+<div class="pn"><a href="philosofy.html">previous: philosofy</a><span></span></div>
+<div class="foot">Sila Yahia &middot; 0xsila &middot; <a href="mailto:silayahia7@gmail.com">silayahia7@gmail.com</a></div></div></body></html>
